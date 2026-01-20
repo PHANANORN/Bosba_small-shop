@@ -268,40 +268,72 @@
 /* === PROFESSIONAL BANK STATEMENT PRINT STYLE === */
 /* === FIX: REMOVE BROWSER HEADER/FOOTER & EXTRA PAGE === */
 /* === PREMIUM PROFESSIONAL STATEMENT DESIGN === */
-    /* === FIXED PRINT STYLES (ដោះស្រាយបញ្ហា Print តូច និងចេញច្រើនទំព័រ) === */
-        @media print {
-            @page { 
-                size: A4; 
-                margin: 0; /* លុប margin របស់ browser ចោល */
-            }
-            body, html { 
-                width: 100%; 
-                height: 100%; 
-                margin: 0; 
-                padding: 0; 
-                background: white;
-            }
-            /* លាក់អ្វីៗគ្រប់យ៉ាង */
-            body > * { display: none !important; }
-            /* បង្ហាញតែ Print Area */
-            #print-area { 
-                display: block !important; 
-                width: 100% !important; 
-                height: auto !important;
-                position: absolute; 
-                top: 0; 
-                left: 0; 
-                z-index: 9999;
-                background: white;
-            }
-            /* កំណត់ទម្រង់ក្រដាសពេល Print ឱ្យពេញ A4 */
-            .print-page-content {
-                width: 210mm; /* ទទឹង A4 */
-                padding: 10mm; /* គម្លាតសងខាង */
-                margin: 0 auto;
-                font-size: 12pt;
-            }
+    @media print {
+        @page { size: A4; margin: 0; }
+        
+        html, body {
+            width: 100%; height: auto !important; margin: 0 !important; padding: 0 !important;
+            background-color: white !important; visibility: hidden !important;
+            -webkit-print-color-adjust: exact !important; /* បង្ខំឱ្យ Print ចេញពណ៌ Background */
+            print-color-adjust: exact !important;
         }
+
+        body * { visibility: hidden !important; }
+
+        /* --- STATEMENT CONTAINER --- */
+        body.printing-statement #print-area, 
+        body.printing-statement #print-area * { visibility: visible !important; }
+        
+        body.printing-statement #print-area {
+            position: absolute !important; left: 0 !important; top: 0 !important;
+            width: 100% !important; min-height: 100vh !important;
+            padding: 12mm 15mm !important; /* Margin ស្អាតជុំវិញក្រដាស */
+            z-index: 999999 !important;
+            background-color: white !important;
+            display: block !important;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Font ទំនើប */
+            color: #334155; /* ពណ៌អក្សរប្រផេះចាស់ (មើលទៅថ្លៃជាងខ្មៅសុទ្ធ) */
+        }
+
+        /* --- TABLE STYLING --- */
+        body.printing-statement table { 
+            width: 100% !important; border-collapse: collapse !important; margin-top: 25px !important;
+            font-size: 11px !important;
+        }
+        body.printing-statement thead th {
+            background-color: #f1f5f9 !important; /* ពណ៌ក្បាលតារាង */
+            color: #475569 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            padding: 10px 8px !important;
+            border-bottom: 2px solid #e2e8f0 !important;
+            font-weight: 700 !important;
+        }
+        body.printing-statement tbody td {
+            padding: 12px 8px !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            vertical-align: top !important;
+        }
+        body.printing-statement tbody tr:last-child td { border-bottom: none !important; }
+        
+        /* Zebra Striping (ជួរឆ្លាស់ពណ៌ស្រាលៗ) */
+        body.printing-statement tbody tr:nth-child(even) { background-color: #fafafa !important; }
+
+        /* --- UTILITIES --- */
+        .print-text-teal { color: #0d9488 !important; }
+        .print-text-red { color: #ef4444 !important; }
+        .print-bg-teal-light { background-color: #f0fdfa !important; }
+        .print-border-top { border-top: 1px solid #e2e8f0 !important; }
+        
+        /* --- INVOICE SECTION (រក្សាទុក) --- */
+        body.printing-invoice #invoice-modal {
+            visibility: visible !important; position: absolute !important; left: 0 !important; top: 0 !important;
+            width: 100% !important; display: flex !important; justify-content: center !important; padding-top: 20mm !important;
+        }
+        body.printing-invoice #invoice-modal * { visibility: visible !important; }
+        body.printing-invoice #invoice-modal > div { border: 1px solid #eee !important; width: 100% !important; max-width: 80mm !important; }
+        body.printing-invoice #invoice-actions { display: none !important; }
+    }
 </style>
 </head>
 <body>
@@ -695,16 +727,10 @@
             </form>
         </div>
     </div>
-     <div id="invoice-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-white w-auto rounded-2xl overflow-hidden shadow-2xl animate-slide-up relative">
-        <div id="invoice-viewer" class="bg-gray-100 text-black font-sans relative flex justify-center"></div>
-        <div id="invoice-actions" class="bg-white p-4 flex justify-between gap-3 border-t border-gray-100">
-            <button onclick="ui.closeModal('invoice-modal')" class="px-4 py-3 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs">បិទ</button>
-             <button onclick="ui.saveInvoiceAsImage()" class="px-4 py-3 rounded-xl bg-blue-600 text-white font-bold text-xs shadow hover:bg-blue-700 flex items-center"><i class="fas fa-image mr-2"></i> Save Img</button>
-             <button onclick="ui.printInvoice()" class="flex-1 px-4 py-3 rounded-xl bg-teal-600 text-white font-bold text-xs shadow-lg hover:bg-teal-700 flex items-center justify-center"><i class="fas fa-print mr-2"></i> Print A4</button>
-        </div>
-    </div>
-</div>
+
+    <div id="invoice-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden shadow-2xl animate-fade-in relative">
+            <div id="invoice-viewer" class="p-6 bg-white text-black font-sans relative"></div>
             <div id="invoice-actions" class="bg-gray-100 p-4 flex justify-between gap-3 border-t border-gray-200">
                 <button onclick="ui.closeModal('invoice-modal')" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-bold text-xs">បិទ</button>
                 <button onclick="ui.saveInvoiceAsImage()" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-xs shadow hover:bg-blue-700"><i class="fas fa-image mr-2"></i> Save Img</button>
@@ -1223,7 +1249,6 @@
                 const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Report_${document.getElementById('date-start').value}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             },
             generatePDFStatement: () => {
-                // ១. ទាញទិន្ន័យ (ដូចមុន)
                 const data = ui.getFilteredReportData();
                 if(data.length === 0) { ui.showToast("⚠️ គ្មានទិន្ន័យសម្រាប់ Download"); return; }
                 
@@ -1232,14 +1257,15 @@
                 const genDate = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
                 
                 let tSale=0, tExp=0, tProf=0, tQty=0;
+                
                 let tableRows = '';
-
-                // ២. គណនា និង បង្កើតតារាង (Design ថ្មីដ៏ស្រស់ស្អាតរបស់អ្នក)
                 data.forEach(o => {
                     const f = app.calc(o); 
                     tSale += f.income; tExp += f.expense; tProf += f.profit; tQty += parseInt(o.prodQty);
                     
                     const profitClass = f.profit >= 0 ? 'print-text-teal' : 'print-text-red';
+                    
+                    // Status Badge
                     let statusBadge = '';
                     if(o.status === 'pending') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fff7ed; color:#c2410c; border-radius:3px; border:1px solid #ffedd5;">PENDING</span>';
                     else if(o.status === 'cancelled') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fef2f2; color:#b91c1c; border-radius:3px; border:1px solid #fee2e2;">CANCEL</span>';
@@ -1263,81 +1289,91 @@
                         </tr>`;
                 });
 
-                // ៣. បញ្ចូល HTML ទៅក្នុង Print Area
                 const printArea = document.getElementById('print-area');
                 printArea.innerHTML = `
                     <div>
                         <div style="width:100%; height:6px; background: linear-gradient(90deg, #0d9488 0%, #0f766e 100%); margin-bottom: 30px;"></div>
+
                         <div class="flex justify-between items-start mb-10">
                             <div>
-                                <h1 style="font-family: 'Times New Roman', serif; font-size: 28px; font-weight: 700; color: #0f766e; text-transform: uppercase;">Bosba Ladies Dress</h1>
-                                <p style="font-size: 11px; color: #64748b;">Phnom Penh, Cambodia<br>Professional Fashion & Retail</p>
+                                <h1 style="font-family: 'Times New Roman', serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #0f766e; text-transform: uppercase; margin-bottom: 5px;">Bosba Ladies Dress</h1>
+                                <p style="font-size: 11px; color: #64748b; line-height: 1.5;">
+                                    Phnom Penh, Cambodia<br>
+                                    Professional Fashion & Retail
+                                </p>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-size: 24px; font-weight: 300; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">Statement</div>
-                                <div style="margin-top: 8px; font-size: 11px; color: #334155;"><strong>Period:</strong> ${start} — ${end}<br><strong>Date:</strong> ${genDate}</div>
+                                <div style="margin-top: 8px; font-size: 11px; color: #334155;">
+                                    <strong>Period:</strong> ${start} — ${end}<br>
+                                    <strong>Date:</strong> ${genDate}
+                                </div>
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 15px; margin-bottom: 30px;">
                             <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; uppercase; color: #64748b;">Total Revenue</div>
+                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 5px;">Total Revenue</div>
                                 <div style="font-size: 22px; font-weight: 700; color: #334155;">$${tSale.toFixed(2)}</div>
                             </div>
                             <div style="flex: 1; padding: 15px; background: #fff1f2; border: 1px solid #ffe4e6; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; uppercase; color: #be123c;">Total Expenses</div>
+                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #be123c; letter-spacing: 0.5px; margin-bottom: 5px;">Total Expenses</div>
                                 <div style="font-size: 22px; font-weight: 700; color: #be123c;">$${tExp.toFixed(2)}</div>
                             </div>
                             <div style="flex: 1; padding: 15px; background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; uppercase; color: #0f766e;">Net Profit</div>
+                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #0f766e; letter-spacing: 0.5px; margin-bottom: 5px;">Net Profit</div>
                                 <div style="font-size: 22px; font-weight: 700; color: #0d9488;">$${tProf.toFixed(2)}</div>
                             </div>
                         </div>
 
                         <table>
                             <thead>
-                                <tr style="background:#f1f5f9; border-bottom:2px solid #e2e8f0;">
-                                    <th style="padding:10px; text-align:left;">Date</th>
-                                    <th style="padding:10px; text-align:left;">Customer</th>
-                                    <th style="padding:10px; text-align:left;">Product</th>
-                                    <th style="padding:10px; text-align:center;">Qty</th>
-                                    <th style="padding:10px; text-align:right;">Amount</th>
-                                    <th style="padding:10px; text-align:right;">Profit</th>
+                                <tr>
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">Customer</th>
+                                    <th style="text-align:left;">Product Details</th>
+                                    <th style="text-align:center;">Qty</th>
+                                    <th style="text-align:right;">Amount</th>
+                                    <th style="text-align:right;">Profit</th>
                                 </tr>
                             </thead>
                             <tbody>${tableRows}</tbody>
                             <tfoot>
-                                <tr style="border-top: 2px solid #334155;">
-                                    <td colspan="3" style="text-align:right; padding-top: 15px; font-weight: bold;">GRAND TOTAL</td>
-                                    <td style="text-align:center; padding-top: 15px; font-weight: bold;">${tQty}</td>
-                                    <td style="text-align:right; padding-top: 15px; font-weight: bold;">$${tSale.toFixed(2)}</td>
-                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; color: #0f766e;">$${tProf.toFixed(2)}</td>
+                                <tr style="background-color: #fff; border-top: 2px solid #334155;">
+                                    <td colspan="3" style="text-align:right; padding-top: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase;">Grand Total</td>
+                                    <td style="text-align:center; padding-top: 15px; font-weight: bold; font-size: 13px;">${tQty}</td>
+                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 13px;">$${tSale.toFixed(2)}</td>
+                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 14px; color: #0f766e;">$${tProf.toFixed(2)}</td>
                                 </tr>
                             </tfoot>
                         </table>
+
+                        <div style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                            <p style="font-family: 'Times New Roman', serif; font-style: italic; color: #64748b; font-size: 12px; margin-bottom: 5px;">Thank you for your business!</p>
+                            <p style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Generated by Bosba System • All Rights Reserved</p>
+                        </div>
                     </div>
                 `;
                 
-                // === ផ្នែកកែប្រែដ៏សំខាន់ (FIX FOR MOBILE) ===
-                
-                // ជំហានទី ១: បង្ហាញ Print Area ភ្លាម
+                // === ចំណុចសំខាន់ដែលបានកែប្រែ (CRITICAL FIX FOR MOBILE) ===
                 printArea.classList.remove('hidden'); 
                 document.body.classList.add('printing-statement'); 
-
-                // ជំហានទី ២: Force Reflow (បង្ខំឱ្យ Browser គូររូបរាងភ្លាម កុំចាំ)
-                // កូដនេះគ្មានប្រយោជន៍មើលឃើញទេ ប៉ុន្តែវាសំខាន់ណាស់ដើម្បីកុំឱ្យចេញក្រដាសស
-                const _ = printArea.offsetHeight; 
-
-                // ជំហានទី ៣: ហៅ Print ភ្លាមៗ (ដូចកូដចាស់) ហាមមាន setTimeout នៅទីនេះ!
-                window.print();
-
-                // ជំហានទី ៤: លាក់វិញបន្ទាប់ពី Print ចប់ (ទុកពេលឱ្យ User មើល Preview សិន)
-                // យើងដាក់ setTimeout នៅខាងក្រោយវិញ ដើម្បីកុំឱ្យរំខានការហៅ Print
+                
+                // បន្ថយមកត្រឹម 100ms (លឿនល្មមឱ្យ Browser មិន Block, យឺតល្មមឱ្យ Render ទាន់)
                 setTimeout(() => {
-                    document.body.classList.remove('printing-statement');
-                    printArea.classList.add('hidden'); 
-                }, 1000); 
-            },
+                    try {
+                        window.print();
+                    } catch (e) {
+                        alert("មិនអាច Print បានទេ: " + e);
+                    } finally {
+                        // ប្រើ Finally ដើម្បីធានាថាអេក្រង់នឹងត្រឡប់មកធម្មតាវិញ ទោះ Print ចេញ ឬមិនចេញ
+                        setTimeout(() => {
+                            document.body.classList.remove('printing-statement');
+                            printArea.classList.add('hidden'); 
+                        }, 500); // រង់ចាំបន្តិចបន្ទាប់ពីផ្ទាំង Print បិទ
+                    }
+                }, 100); 
+            },            
             shareReportText: () => {
                 const p = document.getElementById('rpt-net-profit').innerText; const o = document.getElementById('rpt-order-count').innerText; const s = document.getElementById('rpt-total-income').innerText; 
                 const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value;
@@ -1519,160 +1555,109 @@
             },
             restore: (id) => ui.askConfirm('restore', id),
             
-            // === ជំនួសដោយកូដ Invoice ថ្មីដែលស្អាតជាងមុន (NEW CLEAN DESIGN) ===
-            // === វិក្កយបត្រស្តង់ដារ (FIXED TABLE LAYOUT) ===
-           // === វិក្កយបត្រដែលបានកែសម្រួល (CORRECTED LAYOUT) ===
             openInvoice: (type) => {
                 history.pushState({modal: true}, null, ''); 
-                const id = parseInt(document.getElementById('entry-id').value);
-                const o = app.data.find(x => x.id === id); if(!o) return;
+                const id = parseInt(document.getElementById('entry-id').value); 
+                const o = app.data.find(x => x.id === id); 
+                if(!o) return; 
                 const f = app.calc(o); 
                 const viewer = document.getElementById('invoice-viewer');
                 
-                const genDateShort = new Date().toLocaleDateString('km-KH');
+                const signatureSection = type === 'admin' ? '' : `
+                    <div class="flex justify-between items-end mt-14 px-4">
+                        <div class="text-center">
+                            <div class="border-b border-gray-300 w-24 mb-2"></div>
+                            <span class="text-[9px] font-bold text-gray-600">អ្នកទទួល</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="border-b border-gray-300 w-24 mb-2"></div>
+                            <span class="text-[9px] font-bold text-gray-600">អ្នកលក់</span>
+                        </div>
+                    </div>`;
 
-                // ប្រើ Table Layout សុទ្ធ ដើម្បីការពារអក្សរជាន់គ្នា
                 let html = `
-                <div id="invoice-capture" style="width: 100%; max-width: 600px; background: white; padding: 20px; margin: 0 auto; font-family: 'Battambang', sans-serif; color: #000;">
+                <div id="invoice-capture" class="bg-white p-6 relative overflow-hidden" style="font-family: 'Battambang', sans-serif;">
                     
-                    <table style="width: 100%; margin-bottom: 20px; border-bottom: 2px solid #0f766e; padding-bottom: 10px;">
-                        <tr>
-                            <td style="vertical-align: top; width: 60%;">
-                                <h1 style="margin: 0; color: #0f766e; font-size: 22px; font-weight: bold; text-transform: uppercase; font-family: 'Times New Roman', serif;">Bosba Ladies Dress</h1>
-                                <p style="margin: 5px 0 0; font-size: 11px; color: #444;">Phnom Penh, Cambodia</p>
-                                <p style="margin: 0; font-size: 11px; color: #444;">Professional Fashion & Retail</p>
-                            </td>
-                            <td style="text-align: right; vertical-align: top; width: 40%;">
-                                <div style="font-size: 24px; font-weight: bold; color: #333; letter-spacing: 1px;">វិក្កយបត្រ</div>
-                                <div style="font-size: 12px; color: #666; text-transform: uppercase;">INVOICE</div>
-                                <div style="color: #0f766e; font-weight: bold; font-size: 14px; margin-top: 5px;">#${o.id.toString().slice(-6)}</div>
-                                <div style="font-size: 11px; color: #444;">កាលបរិច្ឆេទ: ${genDateShort}</div>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <table style="width: 100%; margin-bottom: 20px;">
-                        <tr>
-                            <td style="width: 55%; vertical-align: top; padding-right: 10px;">
-                                <div style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase; border-bottom: 1px solid #eee; margin-bottom: 5px;">អតិថិជន (Bill To):</div>
-                                <div style="font-size: 14px; font-weight: bold; color: #000;">${o.custName}</div>
-                                <div style="font-size: 12px; color: #333;">${o.custPhone}</div>
-                                <div style="font-size: 12px; color: #333;">${o.custAddr || 'N/A'}</div>
-                            </td>
-                            <td style="width: 45%; vertical-align: top; padding-left: 10px; border-left: 1px dashed #ccc;">
-                                <div style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase; border-bottom: 1px solid #eee; margin-bottom: 5px;">អ្នកលក់ (From):</div>
-                                <div style="font-size: 14px; font-weight: bold; color: #000;">Bosba Ladies Dress</div>
-                                <div style="font-size: 12px; color: #333;">Tel: 012 345 678</div>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                        <thead>
-                            <tr style="background-color: #f0fdfa; color: #0f766e;">
-                                <th style="padding: 8px; text-align: left; font-size: 11px; border: 1px solid #ccfbf1;">បរិយាយ (Description)</th>
-                                <th style="padding: 8px; text-align: center; font-size: 11px; border: 1px solid #ccfbf1; width: 50px;">ចំនួន</th>
-                                <th style="padding: 8px; text-align: right; font-size: 11px; border: 1px solid #ccfbf1; width: 80px;">តម្លៃ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 10px 8px; border: 1px solid #e2e8f0;">
-                                    <div style="font-weight: bold; font-size: 13px; color: #000;">${o.prodName}</div>
-                                    ${o.prodSize ? `<div style="font-size: 10px; color: #666;">Size: ${o.prodSize}</div>` : ''}
-                                </td>
-                                <td style="padding: 10px 8px; text-align: center; font-weight: bold; font-size: 13px; color: #000; border: 1px solid #e2e8f0;">${o.prodQty}</td>
-                                <td style="padding: 10px 8px; text-align: right; font-weight: bold; font-size: 13px; color: #000; border: 1px solid #e2e8f0;">$${f.sale.toFixed(2)}</td>
-                            </tr>
-                            ${f.shipIn > 0 ? `
-                            <tr>
-                                <td style="padding: 8px; border: 1px solid #e2e8f0; font-size: 11px; color: #555;">ថ្លៃដឹកជញ្ជូន (Delivery Fee)</td>
-                                <td style="padding: 8px; text-align: center; border: 1px solid #e2e8f0;">-</td>
-                                <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 12px; color: #000; border: 1px solid #e2e8f0;">$${f.shipIn.toFixed(2)}</td>
-                            </tr>` : ''}
-                        </tbody>
-                    </table>
-
-                    <table style="width: 100%;">
-                        <tr>
-                            <td style="width: 50%;"></td>
-                            <td style="width: 50%;">
-                                <table style="width: 100%; border-collapse: collapse;">
-                                    <tr>
-                                        <td style="padding: 5px; font-size: 12px; font-weight: bold; text-align: right;">សរុបរួម (Grand Total):</td>
-                                        <td style="padding: 5px; font-size: 16px; font-weight: bold; text-align: right; color: #0f766e;">$${f.income.toFixed(2)}</td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <div style="margin-top: 30px; text-align: center; border-top: 1px dashed #ccc; padding-top: 15px;">
-                        <p style="font-size: 14px; color: #0f766e; font-weight: bold; font-family: 'Noto Serif Khmer', serif;">អរគុណដែលបានគាំទ្រអាជីវកម្មពួកយើង</p>
-                        <p style="font-size: 10px; color: #999; margin-top: 2px;">Thank you for supporting our business!</p>
+                    <div class="absolute top-0 left-0 w-full h-1.5 bg-teal-600"></div>
+                    <div class="text-center mb-6 border-b border-teal-500 pb-3">
+                        <h2 class="text-xl font-bold text-teal-700">វិក្កយបត្រ</h2>
+                        <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">INVOICE #${o.id.toString().slice(-6)}</p>
+                        <p class="text-[9px] text-gray-400 mt-0.5">${new Date().toLocaleString('km-KH')}</p>
                     </div>
 
+                    <div class="flex justify-between text-[10px] mb-6 gap-2">
+                        <div class="text-left flex-1 pr-2">
+                            <span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">Bill To:</span>
+                            <span class="font-bold text-gray-800 text-[10px] block mb-0.5 line-clamp-1">${o.custName}</span>
+                            <div class="text-gray-500 leading-tight text-[9px]">${o.custPhone}</div>
+                            <div class="text-gray-500 leading-tight mt-0.5 break-words text-[9px]">${o.custAddr || '-'}</div>
+                        </div>
+                        <div class="text-right w-auto pl-2 whitespace-nowrap">
+                            <span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">From:</span>
+                            <span class="font-bold text-gray-800 text-[10px] block mb-0.5">Bosba Ladies Dress</span>
+                            <div class="text-gray-500 leading-tight text-[9px]">Phnom Penh, Cambodia</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between bg-teal-50 p-1.5 rounded-t border-b border-teal-100">
+                            <span class="text-[9px] font-bold text-teal-700 uppercase">បរិយាយ (Description)</span>
+                            <span class="text-[9px] font-bold text-teal-700 uppercase">តម្លៃ (Price)</span>
+                        </div>
+                        <div class="flex justify-between items-start p-2 border-b border-gray-100">
+                            <div>
+                                <div class="text-[10px] font-bold text-gray-800">${o.prodName}</div>
+                                <div class="text-[9px] text-gray-500 mt-0.5">Size: ${o.prodSize || '-'} | Qty: ${o.prodQty}</div>
+                            </div>
+                            <div class="text-[10px] font-bold text-gray-800">$${f.sale.toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mb-4">
+                        <div class="w-1/2 space-y-1 text-right">
+                            <div class="flex justify-between text-[9px] text-gray-600 px-1">
+                                <span>សរុបរង:</span>
+                                <span class="font-medium">$${f.sale.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between text-[9px] text-gray-600 px-1">
+                                <span>ថ្លៃដឹក:</span>
+                                <span class="font-medium">$${f.shipIn.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px] font-bold text-teal-800 mt-1 pt-1 border-t border-teal-100 bg-teal-50 px-2 py-1 rounded">
+                                <span>សរុបរួម:</span>
+                                <span>$${f.income.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${type === 'admin' ? `
+                        <div class="mt-4 pt-2 border-t border-red-100 bg-red-50 p-2 rounded border-dashed">
+                            <h4 class="text-center text-[8px] font-bold text-red-400 uppercase tracking-widest mb-1">INTERNAL USE ONLY</h4>
+                            <div class="grid grid-cols-2 gap-1 text-[9px] text-gray-600">
+                                <div>ថ្លៃដើម: <b>$${f.cogs.toFixed(2)}</b></div>
+                                <div>ដឹកចេញ: <b>$${f.shipExp.toFixed(2)}</b></div>
+                                <div>Ads: <b>$${f.boost.toFixed(2)}</b></div>
+                                <div>ចំណាយសរុប: <b class="text-red-500">$${f.expense.toFixed(2)}</b></div>
+                            </div>
+                            <div class="mt-1 text-center border-t border-red-200 pt-1">
+                                <span class="text-[9px] font-bold text-gray-500">ប្រាក់ចំណេញ</span>
+                                <div class="text-xs font-bold ${f.profit>=0?'text-green-600':'text-red-600'}">$${f.profit.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    ` : `
+                        ${signatureSection}
+                        <div class="text-center mt-10 pt-4 border-t border-gray-100">
+                            <p class="text-[9px] text-gray-500 font-serif-kh">អរគុណដែលបានគាំទ្រអាជីវកម្មពួកយើង!</p>
+                        </div>
+                    `}
                 </div>`;
                 
-                viewer.innerHTML = html;
+                viewer.innerHTML = html; 
                 document.getElementById('invoice-modal').classList.remove('hidden');
             },
             saveInvoiceAsImage: () => { 
-                const element = document.getElementById('invoice-capture');
-                if(!element) return;
-
-                ui.showToast("⏳ កំពុងបង្កើតរូបភាព...");
-
-                html2canvas(element, { 
-                    scale: 2, // គុណភាពរូបភាព (2 គឺច្បាស់ល្មម, 3 អាចធ្ងន់ពេក)
-                    useCORS: true, 
-                    allowTaint: true, 
-                    backgroundColor: "#ffffff",
-                    // សំខាន់៖ កុំកំណត់ windowWidth ឲ្យតូចតាមទូរស័ព្ទ
-                    // យើងទុកឱ្យវាចាប់យកទំហំ Table 500px ពេញ
-                    onclone: (clonedDoc) => {
-                        const el = clonedDoc.getElementById('invoice-capture');
-                        // ធានាថាមិនមាន margin រញ៉េរញ៉ៃពេល Capture
-                        el.style.margin = '0';
-                        el.style.transform = 'none';
-                    }
-                }).then(canvas => { 
-                    const link = document.createElement('a'); 
-                    link.download = `Invoice_${new Date().toISOString().slice(0,10)}_${Date.now().toString().slice(-4)}.jpg`; // ប្រើ .jpg វិញស្រាលជាង
-                    link.href = canvas.toDataURL("image/jpeg", 0.9); 
-                    link.click(); 
-                    ui.showToast("✅ រក្សាទុកជោគជ័យ!"); 
-                }).catch(err => {
-                    alert("Error saving image: " + err);
-                    ui.showToast("❌ បរាជ័យក្នុងការ Save");
-                }); 
-            },
-            // === បន្ថែមថ្មីសម្រាប់ Print Invoice A4 ស្អាត (FIXED) ===
-            // === PRINT INVOICE A4 (FIXED SIZE) ===
-            printInvoice: () => {
-                const content = document.getElementById('invoice-capture').innerHTML;
-                const printArea = document.getElementById('print-area');
-                
-                // បង្កើតទម្រង់ A4 ជាក់លាក់
-                printArea.innerHTML = `
-                    <div class="print-page-content">
-                        ${content}
-                    </div>
-                `;
-                
-                printArea.classList.remove('hidden'); 
-                document.body.classList.add('printing-statement'); 
-
-                // Force layout update
-                const _ = printArea.offsetHeight; 
-
-                window.print();
-
-                // Cleanup
-                setTimeout(() => {
-                    document.body.classList.remove('printing-statement');
-                    printArea.classList.add('hidden'); 
-                }, 1000);
+                const element = document.getElementById('invoice-capture'); 
+                html2canvas(element, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", onclone: (clonedDoc) => { const el = clonedDoc.getElementById('invoice-capture'); el.style.fontFamily = "'Battambang', sans-serif"; el.style.letterSpacing = 'normal'; } }).then(canvas => { const link = document.createElement('a'); link.download = `Invoice_${new Date().toISOString().slice(0,10)}.png`; link.href = canvas.toDataURL("image/png", 1.0); link.click(); ui.showToast("✅ រក្សាទុកជារូបភាព!"); }); 
             },
             shareTextOrder: async () => { const cName = document.getElementById('cust-name').value; const cPhone = document.getElementById('cust-phone').value; const cAddr = document.getElementById('cust-addr').value; const pName = document.getElementById('prod-name').value; const pSize = document.getElementById('prod-size').value; const pQty = document.getElementById('prod-qty').value; const vSale = parseFloat(document.getElementById('val-sale').value) || 0; const vShip = parseFloat(document.getElementById('val-ship-in').value) || 0; const total = vSale + vShip; const text = `📦 វិក្កយបត្រ / ORDER DETAIL\n------------------------\n👤 អតិថិជន: ${cName}\n📞 ទូរស័ព្ទ: ${cPhone}\n📍 ទីតាំង: ${cAddr}\n------------------------\n🛍️ ទំនិញ: ${pName} ${pSize ? '('+pSize+')' : ''}\n🔢 ចំនួន: ${pQty}\n------------------------\n💰 តម្លៃទំនិញ: $${vSale.toFixed(2)}\n🚚 ថ្លៃដឹក: $${vShip.toFixed(2)}\n💵 សរុប: $${total.toFixed(2)}\n------------------------\nអរគុណ! Thank you! 🙏`; if (navigator.share) { try { await navigator.share({ title: 'Order Details', text: text }); } catch(e) {} } else { navigator.clipboard.writeText(text); ui.showToast("📋 បានចម្លងអក្សរវិក្កយបត្រ!"); } },
             
