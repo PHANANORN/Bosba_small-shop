@@ -727,10 +727,16 @@
             </form>
         </div>
     </div>
-
-    <div id="invoice-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden shadow-2xl animate-fade-in relative">
-            <div id="invoice-viewer" class="p-6 bg-white text-black font-sans relative"></div>
+     <div id="invoice-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white w-auto rounded-2xl overflow-hidden shadow-2xl animate-slide-up relative">
+        <div id="invoice-viewer" class="bg-gray-100 text-black font-sans relative flex justify-center"></div>
+        <div id="invoice-actions" class="bg-white p-4 flex justify-between gap-3 border-t border-gray-100">
+            <button onclick="ui.closeModal('invoice-modal')" class="px-4 py-3 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs">បិទ</button>
+             <button onclick="ui.saveInvoiceAsImage()" class="px-4 py-3 rounded-xl bg-blue-600 text-white font-bold text-xs shadow hover:bg-blue-700 flex items-center"><i class="fas fa-image mr-2"></i> Save Img</button>
+             <button onclick="ui.printInvoice()" class="flex-1 px-4 py-3 rounded-xl bg-teal-600 text-white font-bold text-xs shadow-lg hover:bg-teal-700 flex items-center justify-center"><i class="fas fa-print mr-2"></i> Print A4</button>
+        </div>
+    </div>
+</div>
             <div id="invoice-actions" class="bg-gray-100 p-4 flex justify-between gap-3 border-t border-gray-200">
                 <button onclick="ui.closeModal('invoice-modal')" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-bold text-xs">បិទ</button>
                 <button onclick="ui.saveInvoiceAsImage()" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-xs shadow hover:bg-blue-700"><i class="fas fa-image mr-2"></i> Save Img</button>
@@ -1545,109 +1551,130 @@
             },
             restore: (id) => ui.askConfirm('restore', id),
             
+            // === ជំនួសដោយកូដ Invoice ថ្មីដែលស្អាតជាងមុន (NEW CLEAN DESIGN) ===
             openInvoice: (type) => {
                 history.pushState({modal: true}, null, ''); 
-                const id = parseInt(document.getElementById('entry-id').value); 
-                const o = app.data.find(x => x.id === id); 
-                if(!o) return; 
+                const id = parseInt(document.getElementById('entry-id').value);
+                const o = app.data.find(x => x.id === id); if(!o) return;
                 const f = app.calc(o); 
                 const viewer = document.getElementById('invoice-viewer');
                 
-                const signatureSection = type === 'admin' ? '' : `
-                    <div class="flex justify-between items-end mt-14 px-4">
-                        <div class="text-center">
-                            <div class="border-b border-gray-300 w-24 mb-2"></div>
-                            <span class="text-[9px] font-bold text-gray-600">អ្នកទទួល</span>
-                        </div>
-                        <div class="text-center">
-                            <div class="border-b border-gray-300 w-24 mb-2"></div>
-                            <span class="text-[9px] font-bold text-gray-600">អ្នកលក់</span>
-                        </div>
-                    </div>`;
+                const genDateShort = new Date().toLocaleDateString('km-KH');
+                const genTime = new Date().toLocaleTimeString('km-KH', {hour: '2-digit', minute:'2-digit'});
 
+                // ការរចនាថ្មី៖ ប្រើប្រអប់ដែលមានទទឹងថេរ (Fixed Width Card) ដើម្បីងាយស្រួល Capture
                 let html = `
-                <div id="invoice-capture" class="bg-white p-6 relative overflow-hidden" style="font-family: 'Battambang', sans-serif;">
+                <div id="invoice-capture" style="width: 380px; font-family: 'Battambang', sans-serif;" class="bg-white shadow-sm mx-auto">
+                    <div class="h-3 w-full bg-gradient-to-r from-teal-600 to-teal-500"></div>
                     
-                    <div class="absolute top-0 left-0 w-full h-1.5 bg-teal-600"></div>
-                    <div class="text-center mb-6 border-b border-teal-500 pb-3">
-                        <h2 class="text-xl font-bold text-teal-700">វិក្កយបត្រ</h2>
-                        <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">INVOICE #${o.id.toString().slice(-6)}</p>
-                        <p class="text-[9px] text-gray-400 mt-0.5">${new Date().toLocaleString('km-KH')}</p>
-                    </div>
+                    <div class="p-6 pt-4">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-bold text-teal-700 font-serif-kh mb-1">វិក្កយបត្រ</h2>
+                            <div class="flex justify-center items-center gap-2 text-[10px] text-gray-500 uppercase tracking-wider">
+                                <span class="bg-teal-50 text-teal-700 px-2 py-0.5 rounded font-bold">#${o.id.toString().slice(-6)}</span>
+                                <span>•</span>
+                                <span>${genDateShort} ${genTime}</span>
+                            </div>
+                        </div>
 
-                    <div class="flex justify-between text-[10px] mb-6 gap-2">
-                        <div class="text-left flex-1 pr-2">
-                            <span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">Bill To:</span>
-                            <span class="font-bold text-gray-800 text-[10px] block mb-0.5 line-clamp-1">${o.custName}</span>
-                            <div class="text-gray-500 leading-tight text-[9px]">${o.custPhone}</div>
-                            <div class="text-gray-500 leading-tight mt-0.5 break-words text-[9px]">${o.custAddr || '-'}</div>
+                        <div class="flex justify-between mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100 text-[11px]">
+                            <div class="flex-1">
+                                <span class="text-teal-600 font-bold block text-[9px] uppercase mb-1"><i class="fas fa-user-tag mr-1"></i> អតិថិជន (Customer):</span>
+                                <span class="font-bold text-gray-800 text-sm block mb-0.5">${o.custName}</span>
+                                <div class="text-gray-500 leading-tight">${o.custPhone}</div>
+                                <div class="text-gray-500 leading-tight truncate max-w-[150px]">${o.custAddr}</div>
+                            </div>
+                            <div class="text-right flex-1 pl-4 border-l border-gray-200/50">
+                                <span class="text-teal-600 font-bold block text-[9px] uppercase mb-1">ចេញដោយ (From):</span>
+                                <span class="font-bold text-gray-800 text-sm block mb-0.5">MY SHOP</span>
+                                <div class="text-gray-500 leading-tight">Phnom Penh</div>
+                                <div class="text-gray-500 leading-tight">Cambodia</div>
+                            </div>
                         </div>
-                        <div class="text-right w-auto pl-2 whitespace-nowrap">
-                            <span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">From:</span>
-                            <span class="font-bold text-gray-800 text-[10px] block mb-0.5">Bosba Ladies Dress</span>
-                            <div class="text-gray-500 leading-tight text-[9px]">Phnom Penh, Cambodia</div>
+
+                        <div class="mb-2">
+                            <div class="flex justify-between bg-teal-600 text-white p-2 py-2.5 rounded-t-lg text-[10px] font-bold uppercase tracking-wider">
+                                <span>បរិយាយ (Description)</span>
+                                <span>តម្លៃ (Amount)</span>
+                            </div>
+                            <div class="bg-white border-x border-b border-gray-100 p-3 rounded-b-lg space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="text-sm font-bold text-gray-800">${o.prodName}</div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5 flex gap-2">
+                                            ${o.prodSize ? `<span class="bg-gray-100 px-1.5 rounded">Size: ${o.prodSize}</span>` : ''}
+                                            <span class="bg-gray-100 px-1.5 rounded">Qty: ${o.prodQty}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm font-bold text-gray-800">$${f.sale.toFixed(2)}</div>
+                                </div>
+                                
+                                ${f.shipIn > 0 ? `
+                                <div class="flex justify-between items-center pt-2 border-t border-dashed border-gray-100">
+                                    <div class="text-xs text-gray-600"><i class="fas fa-truck-fast mr-1 text-gray-400"></i> ថ្លៃដឹកជញ្ជូន (Shipping)</div>
+                                    <div class="text-xs font-bold text-gray-800">$${f.shipIn.toFixed(2)}</div>
+                                </div>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-end mt-4">
+                            <div class="w-full bg-teal-50 p-3 rounded-xl border border-teal-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-bold text-teal-800 uppercase">សរុបរួម (Grand Total)</span>
+                                    <span class="text-xl font-bold text-teal-700">$${f.income.toFixed(2)}</span>
+                                  </div>
+                            </div>
+
+                            ${type === 'admin' ? `
+                            <div class="w-full mt-3 pt-2 border-t-2 border-red-100 bg-red-50/50 p-2 rounded border-dashed text-[10px]">
+                                <div class="flex justify-between text-gray-500 mb-1"><span>ថ្លៃដើម + ដឹកចេញ + Ads:</span> <span>$${f.expense.toFixed(2)}</span></div>
+                                <div class="flex justify-between font-bold text-xs"><span>ប្រាក់ចំណេញ:</span> <span class="${f.profit>=0?'text-green-600':'text-red-600'}">$${f.profit.toFixed(2)}</span></div>
+                            </div>` : ''}
+                            
+                            <div class="text-center w-full mt-6">
+                                <p class="text-[10px] text-teal-600 font-bold font-serif-kh">សូមអរគុណ!</p>
+                                <p class="text-[9px] text-gray-400">Thank you for your business.</p>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="mb-4">
-                        <div class="flex justify-between bg-teal-50 p-1.5 rounded-t border-b border-teal-100">
-                            <span class="text-[9px] font-bold text-teal-700 uppercase">បរិយាយ (Description)</span>
-                            <span class="text-[9px] font-bold text-teal-700 uppercase">តម្លៃ (Price)</span>
-                        </div>
-                        <div class="flex justify-between items-start p-2 border-b border-gray-100">
-                            <div>
-                                <div class="text-[10px] font-bold text-gray-800">${o.prodName}</div>
-                                <div class="text-[9px] text-gray-500 mt-0.5">Size: ${o.prodSize || '-'} | Qty: ${o.prodQty}</div>
-                            </div>
-                            <div class="text-[10px] font-bold text-gray-800">$${f.sale.toFixed(2)}</div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end mb-4">
-                        <div class="w-1/2 space-y-1 text-right">
-                            <div class="flex justify-between text-[9px] text-gray-600 px-1">
-                                <span>សរុបរង:</span>
-                                <span class="font-medium">$${f.sale.toFixed(2)}</span>
-                            </div>
-                            <div class="flex justify-between text-[9px] text-gray-600 px-1">
-                                <span>ថ្លៃដឹក:</span>
-                                <span class="font-medium">$${f.shipIn.toFixed(2)}</span>
-                            </div>
-                            <div class="flex justify-between items-center text-[11px] font-bold text-teal-800 mt-1 pt-1 border-t border-teal-100 bg-teal-50 px-2 py-1 rounded">
-                                <span>សរុបរួម:</span>
-                                <span>$${f.income.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    ${type === 'admin' ? `
-                        <div class="mt-4 pt-2 border-t border-red-100 bg-red-50 p-2 rounded border-dashed">
-                            <h4 class="text-center text-[8px] font-bold text-red-400 uppercase tracking-widest mb-1">INTERNAL USE ONLY</h4>
-                            <div class="grid grid-cols-2 gap-1 text-[9px] text-gray-600">
-                                <div>ថ្លៃដើម: <b>$${f.cogs.toFixed(2)}</b></div>
-                                <div>ដឹកចេញ: <b>$${f.shipExp.toFixed(2)}</b></div>
-                                <div>Ads: <b>$${f.boost.toFixed(2)}</b></div>
-                                <div>ចំណាយសរុប: <b class="text-red-500">$${f.expense.toFixed(2)}</b></div>
-                            </div>
-                            <div class="mt-1 text-center border-t border-red-200 pt-1">
-                                <span class="text-[9px] font-bold text-gray-500">ប្រាក់ចំណេញ</span>
-                                <div class="text-xs font-bold ${f.profit>=0?'text-green-600':'text-red-600'}">$${f.profit.toFixed(2)}</div>
-                            </div>
-                        </div>
-                    ` : `
-                        ${signatureSection}
-                        <div class="text-center mt-10 pt-4 border-t border-gray-100">
-                            <p class="text-[9px] text-gray-500 font-serif-kh">អរគុណដែលបានគាំទ្រអាជីវកម្មពួកយើង!</p>
-                        </div>
-                    `}
+                    <div class="h-1.5 w-full bg-gray-100"></div>
                 </div>`;
                 
-                viewer.innerHTML = html; 
+                viewer.innerHTML = html;
                 document.getElementById('invoice-modal').classList.remove('hidden');
             },
             saveInvoiceAsImage: () => { 
-                const element = document.getElementById('invoice-capture'); 
-                html2canvas(element, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", onclone: (clonedDoc) => { const el = clonedDoc.getElementById('invoice-capture'); el.style.fontFamily = "'Battambang', sans-serif"; el.style.letterSpacing = 'normal'; } }).then(canvas => { const link = document.createElement('a'); link.download = `Invoice_${new Date().toISOString().slice(0,10)}.png`; link.href = canvas.toDataURL("image/png", 1.0); link.click(); ui.showToast("✅ រក្សាទុកជារូបភាព!"); }); 
+                const element = document.getElementById('invoice-capture');
+                if(!element) return;
+
+                // បង្ហាញ Toast ថា "កំពុងដំណើរការ"
+                ui.showToast("⏳ កំពុងបង្កើតរូបភាព...");
+
+                // ប្រើការកំណត់ពិសេសសម្រាប់ html2canvas
+                html2canvas(element, { 
+                    scale: 3, // គុណភាពច្បាស់ (High Resolution)
+                    useCORS: true, 
+                    allowTaint: true, 
+                    backgroundColor: "#ffffff",
+                    // កំណត់ទទឹងឱ្យថេរពេលចាប់រូបភាព ដើម្បីកុំឱ្យវាបង្រួម
+                    width: 380,
+                    windowWidth: 400,
+                    onclone: (clonedDoc) => { 
+                        const el = clonedDoc.getElementById('invoice-capture');
+                        // ធានាថា Font ត្រូវបានប្រើត្រឹមត្រូវ
+                        el.style.fontFamily = "'Battambang', sans-serif";
+                        // ធានាថាវានៅកណ្តាលពេល Capture
+                        el.style.margin = '0 auto';
+                    } 
+                }).then(canvas => { 
+                    const link = document.createElement('a'); 
+                    link.download = `Invoice_${new Date().toISOString().slice(0,10)}_${Date.now().toString().slice(-4)}.png`; 
+                    link.href = canvas.toDataURL("image/png", 1.0); 
+                    link.click(); 
+                    ui.showToast("✅ រក្សាទុកជារូបភាពជោគជ័យ!"); 
+                }).catch(err => {
+                    ui.showToast("❌ បរាជ័យ: " + err);
+                }); 
             },
             // === បន្ថែមថ្មីសម្រាប់ Print Invoice A4 ស្អាត (FIXED) ===
             printInvoice: () => {
