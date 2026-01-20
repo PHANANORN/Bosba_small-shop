@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>My Shop - V67 Fixed History & Nav</title>
+    <title>My Shop - V70 Glassmorphism Full</title>
     <meta name="theme-color" content="#0F766E">
     
     <link rel="manifest" href="manifest.json">
@@ -31,9 +31,9 @@
                         dark: { bg: '#020617', card: '#1e293b' }   
                     },
                     boxShadow: {
-                        'pop': '0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0,0,0,0.05)',
-                        'glow': '0 0 15px rgba(13, 148, 136, 0.4)',
-                        'float': '0 20px 40px -5px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'glass-dark': '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
+                        'glow': '0 0 15px rgba(13, 148, 136, 0.4)'
                     }
                 }
             }
@@ -41,248 +41,300 @@
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Noto+Serif+Khmer:wght@400;700&display=swap" rel="stylesheet">
-    
     <style>
-        /* BASE & SCROLL */
-        body { font-family: 'Battambang', sans-serif; background-color: #F8FAFC; color: #334155; -webkit-tap-highlight-color: transparent; padding-bottom: 110px; overscroll-behavior-y: none; }
-        .dark body { background-color: #020617; color: #f8fafc; } 
-        .font-serif-kh { font-family: 'Noto Serif Khmer', serif; }
+    /* === 1. SYSTEM & GLASS EFFECTS === */
+    ::-webkit-scrollbar { display: none; }
+    * { -ms-overflow-style: none; scrollbar-width: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; touch-action: manipulation; }
+    
+    /* BACKGROUND AMBIENCE (To make glass effect visible) */
+    body { 
+        font-family: 'Battambang', sans-serif; 
+        background-color: #F8FAFC; 
+        color: #334155; 
+        padding-bottom: 110px; 
+        overscroll-behavior-y: none;
+        /* Subtle Gradient Mesh for Glass Effect Depth */
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.08) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
+        background-attachment: fixed;
+    }
+    .dark body { 
+        background-color: #020617; 
+        color: #f8fafc;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.15) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+    } 
+    .font-serif-kh { font-family: 'Noto Serif Khmer', serif; }
+    
+    /* GLASSMORPHISM UTILITY */
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7); /* High transparency */
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.6); /* Dark transparency */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* === 2. HEADER ADJUSTMENTS === */
+    .smart-header-anim { position: fixed; top: 0; left: 0; width: 100%; z-index: 50; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease; }
+    .hide-ui { transform: translateY(-120%); opacity: 0; pointer-events: none; }
+    
+    .header-bg {
+        background: linear-gradient(135deg, #0d9488, #14b8a6, #2dd4bf);
+        background-size: 200% 200%;
+        animation: gradientFlow 8s ease infinite;
+        padding-top: max(15px, env(safe-area-inset-top));
         
-        /* === SMART HEADER ANIMATION (SMOOTH SCROLL) === */
-        /* Applied to both Home and Report headers */
-        .smart-header-anim {
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            z-index: 40; 
-            /* Improved Transition: Soft landing easing */
-            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
-        }
-        .hide-ui { transform: translateY(-120%); opacity: 0; pointer-events: none; }
-
-        /* === HOME HEADER STYLES === */
-        .header-bg { 
-            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); 
-            padding-top: max(10px, env(safe-area-inset-top)); 
-            padding-bottom: 80px; /* Space for stats */
-            border-bottom-left-radius: 35px; 
-            border-bottom-right-radius: 35px; 
-            box-shadow: 0 15px 35px -5px rgba(15, 118, 110, 0.5); 
-            position: relative;
-            overflow: visible; /* Important for stats to float out */
-        }
-        /* Texture for Home */
-        .header-bg::before {
-            content: ''; position: absolute; inset: 0; opacity: 0.1; pointer-events: none;
-            background-image: radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px);
-            background-size: 15px 15px; border-bottom-left-radius: 35px; border-bottom-right-radius: 35px;
-        }
-        .dark .header-bg { background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); }
-
-        /* FLOATING STATS (Attached to Header) */
-        .floating-stats-container { 
-            position: absolute; 
-            bottom: -45px; /* Half in, half out */
-            left: 0; 
-            width: 100%; 
-            padding: 0 20px; 
-            z-index: 50; 
-            display: flex; 
-            justify-content: center; 
-        }
-        .stat-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(15px);
-            border-radius: 24px; 
-            padding: 16px; 
-            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255,255,255,0.5); 
-            border: 1px solid rgba(255,255,255,0.8); 
-        }
-        .dark .stat-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-        /* === REPORT HEADER STYLES (NEW TEXTURE ADDED) === */
-        #report-header-container { display: none; } /* Hidden by default until tab active */
+        /* ADJUSTMENT 1: Increased padding-bottom to separate text from cards */
+        padding-bottom: 135px; 
         
-        .report-header-bg {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(15px);
-            padding-top: max(10px, env(safe-area-inset-top));
-            padding-bottom: 20px;
-            padding-left: 16px; padding-right: 16px;
-            border-bottom: 1px solid rgba(13, 148, 136, 0.15);
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            /* Enhanced Shadow */
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12); 
-            position: relative;
-            z-index: 40;
-        }
-        /* NEW: Texture for Report Header (Requested Point 1) */
-        .report-header-bg::after {
-            content: ''; position: absolute; inset: 0; opacity: 0.08; pointer-events: none; z-index: -1;
-            /* Dot Pattern */
-            background-image: radial-gradient(#0f766e 1.5px, transparent 1.5px); 
-            background-size: 16px 16px;
-            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
-        }
-        .dark .report-header-bg { background: rgba(15, 23, 42, 0.98); }
-        .dark .report-header-bg::after { background-image: radial-gradient(#ffffff 1px, transparent 1px); opacity: 0.05; }
+        border-bottom-left-radius: 40px;
+        border-bottom-right-radius: 40px;
+        box-shadow: 0 10px 30px -5px rgba(13, 148, 136, 0.3);
+        position: relative; z-index: 10; overflow: visible !important; 
+    }
+    .dark .header-bg { background: linear-gradient(135deg, #0f172a, #1e293b, #115e59); box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5); }
+    
+    @keyframes gradientFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes floatIcon { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-5px) rotate(5deg); } }
 
-        /* MAIN LAYOUT SPACING */
-        .main-content { padding: 0 16px; position: relative; z-index: 10; transition: margin-top 0.3s ease; } 
-        /* Home starts with margin because header is tall */
-        #view-home { margin-top: 260px; }
-        /* Reports starts with margin because header is shorter but fixed */
-        #view-reports { margin-top: 190px; }
+    .bg-deco-icon { position: absolute; opacity: 0.1; color: white; pointer-events: none; z-index: 0; }
+    .deco-1 { top: 10%; left: 10%; font-size: 80px; transform: rotate(-15deg); }
+    .deco-2 { bottom: 30%; right: -10%; font-size: 120px; transform: rotate(10deg); }
 
-        .search-box-container { position: sticky; top: 10px; z-index: 30; margin-bottom: 20px; }
+    .floating-stats-container { 
+        position: absolute; 
+        /* ADJUSTMENT 2: Moved cards further down relative to header bottom */
+        bottom: -20px; 
+        left: 0; width: 100%; padding: 0 20px; 
+        z-index: 100; display: flex; gap: 12px; justify-content: center; 
+    }
 
-        /* NAVIGATION */
-        .nav-container { 
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 85px; 
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.05); 
-            display: grid; grid-template-columns: 1fr 1fr 70px 1fr 1fr; align-items: center; 
-            padding-bottom: env(safe-area-inset-bottom); z-index: 50; 
-            border-top-left-radius: 30px; border-top-right-radius: 30px; 
-            border-top: 1px solid rgba(255,255,255,0.5);
-        }
-        .dark .nav-container { background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255,255,255,0.1); box-shadow: 0 -10px 40px rgba(0,0,0,0.3); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px; cursor: pointer; height: 100%; transition: all 0.2s; }
-        .nav-item.active { color: #0f766e; font-weight: 700; transform: translateY(-2px); }
-        .dark .nav-item.active { color: #2dd4bf; }
+    /* === GLASSY STAT CARDS === */
+    .home-stat-card {
+        flex: 1;
+        /* GLASS EFFECT APPLIED */
+        background: rgba(255, 255, 255, 0.75); 
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 15px 35px -5px rgba(0,0,0,0.1);
         
-        .fab-wrapper { position: relative; top: -35px; width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; z-index: 60; }
-        .fab-button { 
-            width: 60px; height: 60px; 
-            background: linear-gradient(135deg, #0d9488, #0f766e); 
-            border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-size: 26px; 
-            box-shadow: 0 10px 25px rgba(13, 148, 136, 0.4); 
-            cursor: pointer; transition: transform 0.2s; 
-            border: 4px solid #F1F5F9; 
-        }
-        .dark .fab-button { border-color: #020617; box-shadow: 0 0 20px rgba(45, 212, 191, 0.4); }
-        .fab-button:active { transform: scale(0.95); }
+        border-radius: 24px; padding: 18px 15px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        position: relative; overflow: hidden;
+    }
+    
+    .dark .home-stat-card {
+        background: rgba(30, 41, 59, 0.65); 
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 15px 35px -5px rgba(0,0,0,0.4);
+    }
 
-        /* CARD DESIGN */
-        .order-card { 
-            background: #ffffff;
-            border-radius: 20px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            margin-bottom: 20px; 
-            position: relative; 
-            cursor: pointer; 
-            overflow: hidden;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-        .order-card:active { transform: scale(0.98); }
-        .dark .order-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+    .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; opacity: 0.9; }
+    .stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .card-real .stat-label { color: #065f46; } .card-real .stat-value { color: #059669; }
+    .card-pending .stat-label { color: #9a3412; } .card-pending .stat-value { color: #d97706; }
+    .dark .card-real .stat-label, .dark .card-real .stat-value { color: #34d399; text-shadow: 0 0 20px rgba(52, 211, 153, 0.3); }
+    .dark .card-pending .stat-label, .dark .card-pending .stat-value { color: #fbbf24; text-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
 
-        .card-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
-        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; display: inline-flex; items-center; gap: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card-icon-box { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; font-size: 16px; }
+    .icon-green { background: rgba(236, 253, 245, 0.8); color: #059669; } 
+    .icon-orange { background: rgba(255, 251, 235, 0.8); color: #d97706; }
+    .dark .icon-green { background: rgba(16, 185, 129, 0.2); color: #34d399; } 
+    .dark .icon-orange { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
 
-        .input-field { width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 16px; outline: none; font-size: 16px; background: #fff; transition: all 0.2s; }
-        .input-field:focus { border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
-        .dark .input-field { background: #334155; border-color: #475569; color: white; }
-        .dark .input-field:focus { border-color: #2dd4bf; }
+    .header-icon-btn { width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%; background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; padding: 0; margin: 0; cursor: pointer; color: white; transition: transform 0.2s; }
+    .header-icon-btn i { font-size: 16px; margin: 0; }
+    .header-icon-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.3); }
+
+    /* === 3. CONTENT & LISTS === */
+    .main-content { padding: 0 16px; position: relative; z-index: 10; transition: margin-top 0.3s ease; } 
+    #view-home { margin-top: 300px; padding-bottom: 40px; } /* Adjusted for taller header */
+    #view-reports { margin-top: 195px; } 
+    .search-box-container { position: sticky; top: 15px; z-index: 30; margin-bottom: 15px; }
+
+    #report-header-container { display: none; } 
+    .report-header-bg { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); padding-top: max(15px, env(safe-area-inset-top)); padding-bottom: 20px; padding-left: 16px; padding-right: 16px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; border-bottom: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05); position: relative; z-index: 40; }
+    .dark .report-header-bg { background: rgba(15, 23, 42, 0.8); border-bottom: 1px solid rgba(255,255,255,0.1); }
+    
+    .nav-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 90px; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 -10px 40px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr 70px 1fr 1fr; align-items: center; padding-bottom: env(safe-area-inset-bottom); z-index: 50; border-top-left-radius: 30px; border-top-right-radius: 30px; border-top: 1px solid rgba(255,255,255,0.5); }
+    .dark .nav-container { background: rgba(15, 23, 42, 0.85); border-top: 1px solid rgba(255,255,255,0.1); box-shadow: 0 -10px 40px rgba(0,0,0,0.3); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px; cursor: pointer; height: 100%; transition: all 0.2s; }
+    .nav-item.active { color: #0f766e; font-weight: 700; transform: translateY(-4px); }
+    .dark .nav-item.active { color: #2dd4bf; }
+    
+    .fab-wrapper { position: relative; top: -40px; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; z-index: 60; }
+    .fab-button { width: 64px; height: 64px; background: linear-gradient(135deg, #0d9488, #0f766e); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 10px 25px rgba(13, 148, 136, 0.4); cursor: pointer; transition: transform 0.2s; border: 4px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px); }
+    .dark .fab-button { border-color: rgba(0,0,0,0.2); box-shadow: 0 0 25px rgba(45, 212, 191, 0.3); }
+    .fab-button:active { transform: scale(0.95); }
+
+    /* ORDER CARD WITH GLASS EFFECT */
+    .order-card { 
+        background: rgba(255, 255, 255, 0.7); /* Glassy */
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
         
-        .section-view { display: none; } .section-view.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        border-radius: 20px; box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05); 
+        margin-bottom: 16px; position: relative; cursor: pointer; overflow: hidden; transition: transform 0.1s, box-shadow 0.1s; 
+    }
+    .order-card:active { transform: scale(0.98); }
+    .dark .order-card { 
+        background: rgba(30, 41, 59, 0.6); 
+        border: 1px solid rgba(255,255,255,0.08); 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
+    }
 
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150px); background: #064E3B; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: bold; z-index: 999999; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 2px solid #34D399; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+    .card-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
+    .status-badge { padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .input-field { width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 16px; outline: none; font-size: 16px; background: rgba(255,255,255,0.8); transition: all 0.2s; }
+    .input-field:focus { border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15); background: #fff; }
+    .dark .input-field { background: rgba(51, 65, 85, 0.5); border-color: #475569; color: white; }
+    .dark .input-field:focus { border-color: #2dd4bf; background: rgba(51, 65, 85, 0.8); }
+    select#filter-dropdown option { background-color: #ffffff; color: #334155; }
+    .dark select#filter-dropdown option { background-color: #1e293b; color: #ffffff; }
 
-        #modal-confirm-overlay, #modal-import-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999; backdrop-filter: blur(4px); }
-        .confirm-box { background: white; width: 85%; max-width: 320px; padding: 25px; border-radius: 24px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    /* Stat Card (Reports) Glass */
+    .stat-card { 
+        background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); 
+        border-radius: 26px; padding: 18px; 
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255,255,255,0.6); 
+    }
+    .dark .stat-card { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+
+    .section-view { display: none; } .section-view.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Report Grid Items Glass */
+    .report-item { background: rgba(255,255,255,0.8); border-radius: 20px; padding: 16px; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+    .dark .report-item { background: rgba(51, 65, 85, 0.4); border-color: rgba(255,255,255,0.1); }
+    
+    .date-btn-active { background: linear-gradient(135deg, #0d9488, #0f766e) !important; color: white !important; border: none !important; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35); }
+    .card-gradient-green { background: linear-gradient(135deg, rgba(236, 253, 245, 0.8) 0%, rgba(209, 250, 229, 0.8) 100%); border: 1px solid #a7f3d0; }
+    .dark .card-gradient-green { background: linear-gradient(135deg, rgba(6, 78, 59, 0.6) 0%, rgba(6, 95, 70, 0.6) 100%); border: 1px solid #059669; }
+    
+    .modern-date-input { width: 100%; background: rgba(255,255,255,0.8); border-radius: 14px; padding: 12px 14px 12px 42px; font-size: 14px; font-weight: 700; color: #334155; border: 1px solid rgba(226, 232, 240, 0.8); outline: none; transition: all 0.2s; cursor: pointer; }
+    .dark .modern-date-input { background: rgba(51, 65, 85, 0.5); border-color: #475569; color: white; }
+    
+    .date-icon-overlay { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; z-index: 10; font-size: 16px; }
+    .dark .date-icon-overlay { color: #64748b; }
+    .flatpickr-calendar { border-radius: 20px !important; box-shadow: 0 20px 50px rgba(0,0,0,0.25) !important; border: none !important; font-family: 'Battambang', sans-serif !important; overflow: hidden !important; background: rgba(255,255,255,0.95) !important; backdrop-filter: blur(20px) !important; }
+    .dark .flatpickr-calendar { background: rgba(30, 41, 59, 0.95) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.7) !important; }
+    .flatpickr-months { background: #0F766E !important; padding: 15px 0 !important; }
+    .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-current-month input.cur-year { color: #fff !important; font-weight: 900 !important; font-size: 18px !important; }
+    .flatpickr-day.selected { background: #0F766E !important; border-color: #0F766E !important; box-shadow: 0 4px 10px rgba(15, 118, 110, 0.4) !important; }
+    
+    /* History Glass */
+    .timeline-wrapper { position: relative; padding-left: 24px; padding-bottom: 30px; }
+    .timeline-wrapper::before { content: ''; position: absolute; top: 0; bottom: 0; left: 9px; width: 2px; background: linear-gradient(to bottom, #0f766e, #cbd5e1, transparent); z-index: 0; }
+    .dark .timeline-wrapper::before { background: linear-gradient(to bottom, #0d9488, #334155, transparent); }
+    
+    .history-card-modern { 
+        background: rgba(255, 255, 255, 0.8); /* Glass */
+        backdrop-filter: blur(10px);
+        border-radius: 20px; padding: 18px; margin-bottom: 16px; position: relative; z-index: 1; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(255,255,255,0.5); 
+        transition: transform 0.2s; opacity: 0; transform: translateY(20px); animation: slideInUp 0.5s ease forwards; 
+    }
+    .dark .history-card-modern { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .history-card-modern:active { transform: scale(0.98); }
+    .history-dot { position: absolute; left: -22px; top: 22px; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2); z-index: 2; }
+    .dark .history-dot { border-color: #0f172a; }
+    .status-inc { border-left: 4px solid #10b981; } .status-exp { border-left: 4px solid #ef4444; } .status-pen { border-left: 4px solid #f97316; }
+    @keyframes slideInUp { to { opacity: 1; transform: translateY(0); } }
+
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150px); background: rgba(6, 78, 59, 0.9); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: bold; z-index: 999999; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 2px solid #34D399; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    
+    /* MODALS & Z-INDEX */
+    #modal-order, #invoice-modal, #modal-trash, #modal-note { z-index: 9999; }
+    #modal-confirm-overlay, #modal-import-overlay { z-index: 10000; } 
+    #app-loader { z-index: 10001; }
+
+    /* Glass Box for Modals */
+    .glass-box { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px) saturate(200%); border: 1px solid rgba(255,255,255,0.7); box-shadow: 0 30px 60px -10px rgba(0,0,0,0.2); border-radius: 24px; }
+    .dark .glass-box { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.1); }
+/* === កែប្រែផ្នែកនេះ === */
+/* === កែប្រែផ្នែកនេះទាំងស្រុង (UPDATE PRINT CSS) === */
+/* === PROFESSIONAL BANK STATEMENT PRINT STYLE === */
+/* === FIX: REMOVE BROWSER HEADER/FOOTER & EXTRA PAGE === */
+/* === PREMIUM PROFESSIONAL STATEMENT DESIGN === */
+    @media print {
+        @page { size: A4; margin: 0; }
         
-        #modal-trash { z-index: 100; }
-        #invoice-viewer { font-feature-settings: "liga" 0; font-variant-ligatures: none; letter-spacing: normal !important; }
-        #modal-note { z-index: 99999; }
-        .glass-box { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.7); box-shadow: 0 25px 50px -10px rgba(0,0,0,0.15); }
-        .dark .glass-box { background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(255,255,255,0.1); }
-        #app-loader { position: fixed; inset: 0; z-index: 9999999; display: none; justify-content: center; align-items: center; background: rgba(255,255,255,0.8); transition: opacity 0.5s; backdrop-filter: blur(8px); }
-        .dark #app-loader { background: rgba(15, 23, 42, 0.8); }
+        html, body {
+            width: 100%; height: auto !important; margin: 0 !important; padding: 0 !important;
+            background-color: white !important; visibility: hidden !important;
+            -webkit-print-color-adjust: exact !important; /* បង្ខំឱ្យ Print ចេញពណ៌ Background */
+            print-color-adjust: exact !important;
+        }
 
-        /* === MODERN REPORT & DATE UI === */
-        .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-        .report-item { background: #ffffff; border-radius: 16px; padding: 14px; border: 1px solid #f1f5f9; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .dark .report-item { background: #334155; border-color: #475569; }
+        body * { visibility: hidden !important; }
+
+        /* --- STATEMENT CONTAINER --- */
+        body.printing-statement #print-area, 
+        body.printing-statement #print-area * { visibility: visible !important; }
         
-        .date-btn-active { 
-            background: linear-gradient(135deg, #0d9488, #0f766e) !important; 
-            color: white !important; 
-            border: none !important;
-            box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+        body.printing-statement #print-area {
+            position: absolute !important; left: 0 !important; top: 0 !important;
+            width: 100% !important; min-height: 100vh !important;
+            padding: 12mm 15mm !important; /* Margin ស្អាតជុំវិញក្រដាស */
+            z-index: 999999 !important;
+            background-color: white !important;
+            display: block !important;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Font ទំនើប */
+            color: #334155; /* ពណ៌អក្សរប្រផេះចាស់ (មើលទៅថ្លៃជាងខ្មៅសុទ្ធ) */
         }
+
+        /* --- TABLE STYLING --- */
+        body.printing-statement table { 
+            width: 100% !important; border-collapse: collapse !important; margin-top: 25px !important;
+            font-size: 11px !important;
+        }
+        body.printing-statement thead th {
+            background-color: #f1f5f9 !important; /* ពណ៌ក្បាលតារាង */
+            color: #475569 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            padding: 10px 8px !important;
+            border-bottom: 2px solid #e2e8f0 !important;
+            font-weight: 700 !important;
+        }
+        body.printing-statement tbody td {
+            padding: 12px 8px !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            vertical-align: top !important;
+        }
+        body.printing-statement tbody tr:last-child td { border-bottom: none !important; }
         
-        .card-gradient-green { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #a7f3d0; }
-        .dark .card-gradient-green { background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); border: 1px solid #059669; }
+        /* Zebra Striping (ជួរឆ្លាស់ពណ៌ស្រាលៗ) */
+        body.printing-statement tbody tr:nth-child(even) { background-color: #fafafa !important; }
 
-        /* MODERN FLATPICKR INPUT STYLES */
-        .modern-date-input {
-            width: 100%;
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 10px 14px 10px 42px; /* Left padding for icon */
-            font-size: 13px;
-            font-weight: 700;
-            color: #334155;
-            border: 1px solid #e2e8f0;
-            outline: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .dark .modern-date-input { background: #334155; border-color: #475569; color: white; }
-        .modern-date-input:focus { border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
+        /* --- UTILITIES --- */
+        .print-text-teal { color: #0d9488 !important; }
+        .print-text-red { color: #ef4444 !important; }
+        .print-bg-teal-light { background-color: #f0fdfa !important; }
+        .print-border-top { border-top: 1px solid #e2e8f0 !important; }
         
-        .date-icon-overlay {
-            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-            color: #94a3b8; pointer-events: none; z-index: 10;
+        /* --- INVOICE SECTION (រក្សាទុក) --- */
+        body.printing-invoice #invoice-modal {
+            visibility: visible !important; position: absolute !important; left: 0 !important; top: 0 !important;
+            width: 100% !important; display: flex !important; justify-content: center !important; padding-top: 20mm !important;
         }
-        .dark .date-icon-overlay { color: #64748b; }
-        .group:focus-within .date-icon-overlay { color: #0d9488; }
-
-        /* === FLATPICKR CUSTOM THEME FIXES === */
-        .flatpickr-calendar { border-radius: 16px !important; box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important; border: none !important; font-family: 'Battambang', sans-serif !important; overflow: hidden !important; }
-        .dark .flatpickr-calendar { background: #1e293b !important; box-shadow: 0 10px 40px rgba(0,0,0,0.6) !important; }
-        .flatpickr-months { background: #0F766E !important; border-top-left-radius: 16px !important; border-top-right-radius: 16px !important; padding: 10px 0 !important; }
-        .flatpickr-months .flatpickr-month { background: transparent !important; color: #fff !important; fill: #fff !important; height: 40px !important; }
-        .flatpickr-current-month .flatpickr-monthDropdown-months { background-color: transparent !important; color: #ffffff !important; font-weight: 900 !important; font-size: 16px !important; appearance: none; -webkit-appearance: none; cursor: pointer; }
-        .flatpickr-current-month .flatpickr-monthDropdown-months:hover { background-color: rgba(255,255,255,0.1) !important; }
-        .flatpickr-monthDropdown-months option { color: #000 !important; background-color: #fff !important; }
-        .flatpickr-current-month input.cur-year { color: #ffffff !important; font-weight: 900 !important; font-size: 16px !important; }
-        .flatpickr-current-month .numInputWrapper span.arrowUp:after { border-bottom-color: #ffffff !important; }
-        .flatpickr-current-month .numInputWrapper span.arrowDown:after { border-top-color: #ffffff !important; }
-        .flatpickr-current-month .numInputWrapper:hover { background: rgba(255,255,255,0.1) !important; }
-        .flatpickr-weekdays { background: #0F766E !important; padding-bottom: 5px !important; }
-        .flatpickr-weekday { color: rgba(255,255,255,0.8) !important; font-weight: bold !important; }
-        .flatpickr-day { border-radius: 8px !important; font-weight: 500 !important; color: #334155 !important; }
-        .dark .flatpickr-day { color: #cbd5e1 !important; }
-        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay { background: #0F766E !important; border-color: #0F766E !important; color: white !important; box-shadow: 0 4px 10px rgba(15, 118, 110, 0.3) !important; }
-        .flatpickr-day.today { border-color: #0F766E !important; }
-        .flatpickr-day.today:hover { background: #0F766E !important; color: white !important; }
-
-        /* === PDF STATEMENT PRINT STYLES (A4 STANDARD) === */
-        @media print {
-            @page { size: A4; margin: 1.5cm; }
-            body { background: white !important; margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; color: black !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body > *:not(#print-area) { display: none !important; }
-            #print-area { display: block !important; position: absolute; top: 0; left: 0; width: 100%; z-index: 9999; }
-            #print-area * { visibility: visible !important; }
-            
-            /* Table Styling for Print */
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
-            th { background-color: #f3f4f6 !important; color: #374151 !important; font-weight: bold; text-transform: uppercase; padding: 10px; border-bottom: 2px solid #e5e7eb; border-top: 1px solid #e5e7eb; }
-            td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
-            tr { break-inside: avoid; page-break-inside: avoid; }
-            
-            /* Summary Cards in Print */
-            .print-summary-box { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #fff; text-align: center; }
-        }
-    </style>
+        body.printing-invoice #invoice-modal * { visibility: visible !important; }
+        body.printing-invoice #invoice-modal > div { border: 1px solid #eee !important; width: 100% !important; max-width: 80mm !important; }
+        body.printing-invoice #invoice-actions { display: none !important; }
+    }
+</style>
 </head>
 <body>
     
@@ -370,51 +422,53 @@
         </div>
     </div>
 
-    <div id="modal-confirm-overlay" class="hidden flex items-center justify-center">
-        <div class="confirm-box dark:bg-gray-800">
-            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-trash-alt text-xl"></i></div>
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2 font-serif-kh">លុបការលក់នេះ?</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">ទិន្ន័យនឹងត្រូវបានផ្លាស់ទីទៅធុងសំរាម.</p>
-            <div class="flex gap-3"><button onclick="ui.closeConfirm()" class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm bg-transparent">ត្រឡប់ក្រោយ</button><button onclick="ui.executeDelete()" class="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold text-sm shadow-lg shadow-red-200 dark:shadow-none">លុបចោល</button></div>
-        </div>
-    </div>
-
-    <div id="modal-import-overlay" class="hidden flex items-center justify-center">
-        <div class="confirm-box dark:bg-gray-800 animate-slide-up">
-            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-file-import text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2 font-serif-kh">បញ្ចូលទិន្ន័យ?</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4" id="import-msg-count">បានរកឃើញ ... ទិន្ន័យ</p>
-            <div class="flex gap-3">
-                <button onclick="document.getElementById('modal-import-overlay').classList.add('hidden')" class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm bg-transparent">បោះបង់</button>
-                <button id="btn-confirm-import" class="flex-1 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-200 dark:shadow-none">យល់ព្រម</button>
-            </div>
-        </div>
-    </div>
-
     <div id="home-header-container" class="smart-header-anim">
-        <header class="header-bg text-white">
-            <div class="px-5 pt-3 flex justify-between items-start">
-                <button onclick="ui.toggleTheme()" class="w-10 h-10 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center active:scale-95 transition"><i id="theme-icon" class="fas fa-moon text-white"></i></button>
-                
-                <div id="header-home-title" class="text-center overflow-hidden w-full px-2 mt-2">
-                    <h1 class="text-xl font-bold font-serif-kh tracking-wide drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis">MY SMALL SHOP TRACKER</h1>
-                    <p class="text-[10px] text-teal-100 opacity-90 font-light tracking-wider mt-0.5">Professional by Norn🤣</p>
-                </div>
+    <header class="header-bg text-white">
+        
+        <i class="fas fa-store bg-deco-icon deco-1"></i>
+        <i class="fas fa-wallet bg-deco-icon deco-2"></i>
 
-                <button onclick="dataManager.downloadBackup()" class="w-10 h-10 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center active:scale-95 transition"><i class="fas fa-download text-white"></i></button>
+        <div class="px-5 pt-3 flex justify-between items-start relative z-20">
+            <button onclick="ui.toggleTheme()" class="header-icon-btn">
+                <i id="theme-icon" class="fas fa-moon"></i>
+            </button>
+            
+            <div id="header-home-title" class="flex-1 text-center px-2 z-20 pt-1">
+                <div class="relative inline-block mb-3"> <i class="fas fa-shop absolute -right-6 -top-4 text-teal-200 text-2xl drop-shadow-md" style="animation: floatIcon 4s ease-in-out infinite;"></i>
+                    
+                    <h1 class="text-xl font-extrabold font-serif-kh tracking-wide drop-shadow-lg leading-tight text-white">
+                        MY SMALL SHOP TRACKER
+                    </h1>
+                    <p class="text-[11px] text-teal-50 font-bold tracking-widest mt-1 opacity-90">
+                        Professional by Norn🤣
+                    </p>
+                </div>
             </div>
 
-            <div class="floating-stats-container">
-                <div class="flex gap-3 justify-center w-full max-w-lg">
-                    <div class="stat-card w-1/2 flex flex-col items-center"><div class="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center mb-1"><i class="fas fa-wallet text-teal-600 dark:text-teal-400 text-sm"></i></div><span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">ចំណេញជាក់ស្ដែង</span><h2 class="text-3xl font-bold text-teal-700 dark:text-teal-400 mt-1" id="dash-real-profit">$0.00</h2></div>
-                    <div class="stat-card w-1/2 flex flex-col items-center"><div class="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center mb-1"><i class="fas fa-hourglass-half text-orange-500 dark:text-orange-400 text-sm"></i></div><span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">ចំណេញរំពឹងទុក</span><h2 class="text-3xl font-bold text-orange-500 dark:text-orange-400 mt-1" id="dash-pending-profit">$0.00</h2></div>
-                </div>
-            </div>
-        </header>
-    </div>
+            <button onclick="dataManager.downloadBackup()" class="header-icon-btn">
+                <i class="fas fa-cloud-download-alt"></i>
+            </button>
+        </div>
 
+        <div class="floating-stats-container">
+            <div class="home-stat-card card-real">
+                <div class="card-icon-box icon-green">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <span class="stat-label">ចំណេញជាក់ស្ដែង</span>
+                <h2 class="stat-value" id="dash-real-profit">$0.00</h2>
+            </div>
+            
+            <div class="home-stat-card card-pending">
+                <div class="card-icon-box icon-orange">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <span class="stat-label">ចំណេញរំពឹងទុក</span>
+                <h2 class="stat-value" id="dash-pending-profit">$0.00</h2>
+            </div>
+        </div>
+    </header>
+</div>
     <div id="report-header-container" class="smart-header-anim">
         <div class="report-header-bg">
             <h2 class="text-lg font-bold text-teal-700 dark:text-teal-400 font-serif-kh pl-1 flex items-center gap-2 drop-shadow-sm mb-3"><i class="fas fa-chart-line"></i> របាយការណ៍</h2>
@@ -441,7 +495,7 @@
     <main class="main-content">
         <div id="view-home" class="section-view active">
             <div class="px-1 mb-3">
-                 <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-pop border border-gray-100 dark:border-gray-700">
+                 <div class="relative glass-panel rounded-2xl shadow-glass dark:shadow-glass-dark">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-teal-600"><i class="fas fa-filter text-lg"></i></div>
                     <select id="filter-dropdown" onchange="ui.filterList(this.value)" class="w-full py-3.5 pl-10 pr-10 bg-transparent text-base font-bold text-gray-700 dark:text-white outline-none appearance-none rounded-2xl">
                         <option value="all">📑 បង្ហាញទាំងអស់ (All)</option><option value="pending">⏳ រង់ចាំ (Pending)</option><option value="ordered">🛒 បានកុម្មង់ (Ordered)</option><option value="shipping">🚚 កំពុងដឹក (Shipping)</option><option value="completed">✅ ជោគជ័យ (Completed)</option><option value="cancelled">❌ បោះបង់ (Cancelled)</option>
@@ -450,7 +504,7 @@
                 </div>
             </div>
             <div class="search-box-container px-1">
-                <div class="relative shadow-pop bg-white dark:bg-gray-800 rounded-2xl">
+                <div class="relative glass-panel rounded-2xl shadow-glass dark:shadow-glass-dark">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-search text-gray-400 text-lg"></i></div>
                     <input type="text" id="search-input" onkeyup="ui.renderHome()" class="pl-10 input-field rounded-2xl border-none h-14 text-base bg-transparent" placeholder="ស្វែងរកឈ្មោះ, លេខទូរស័ព្ទ...">
                 </div>
@@ -459,7 +513,7 @@
         </div>
 
         <div id="view-reports" class="section-view">
-            <div id="report-content" class="animate-fade-in bg-white dark:bg-gray-900 rounded-3xl p-1 mb-6">
+            <div id="report-content" class="animate-fade-in glass-panel rounded-3xl p-1 mb-6">
                 
                 <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-5 text-white mb-5 shadow-lg relative overflow-hidden">
                     <div class="absolute right-[-20px] top-[-20px] text-[100px] text-white opacity-10 pointer-events-none"><i class="fas fa-globe"></i></div>
@@ -552,9 +606,18 @@
             </div>
         </div>
 
-        <div id="view-history" class="section-view pt-5 px-4 pb-20">
-            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6 pl-1 font-serif-kh">ប្រវត្តិសកម្មភាព</h2>
-            <div id="activity-log"></div>
+        <div id="view-history" class="section-view hidden pt-24 pb-24 px-4">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white font-serif-kh">ប្រវត្តិប្រតិបត្តិការ</h2>
+                    <p class="text-xs text-gray-500 mt-1">បញ្ជីចំណូល និងចំណាយលម្អិត</p>
+                </div>
+                <div class="bg-teal-50 dark:bg-teal-900/30 px-3 py-1 rounded-lg">
+                    <span class="text-xs font-bold text-teal-700 dark:text-teal-400" id="hist-total-count">0 ប្រតិបត្តិការ</span>
+                </div>
+            </div>
+            <div id="history-list-container">
+                </div>
         </div>
 
         <div id="view-settings" class="section-view pt-5">
@@ -565,22 +628,22 @@
                 <div class="space-y-3 mb-4">
                     <button onclick="dataManager.downloadBackup()" class="w-full py-4 bg-teal-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-teal-200 dark:shadow-none hover:bg-teal-700 active:scale-95 transition flex items-center justify-center">
                         <i class="fas fa-download mr-2 text-lg"></i>
-                        📥 ១. រក្សាទុកឯកសារ (Download JSON Backup)
+                        រក្សាទុកឯកសារ (Download JSON Backup)
                     </button>
                     
                     <div class="grid grid-cols-2 gap-3">
                         <label class="w-full flex items-center justify-center py-4 bg-blue-50 dark:bg-gray-800 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-gray-700 rounded-xl text-sm font-bold cursor-pointer active:bg-blue-100 transition text-center hover:bg-blue-100">
-                            <i class="fas fa-file-import mr-2"></i> ២. ដាក់ចូល (Import)<br><span class="text-[10px] opacity-70">(JSON or Excel/CSV)</span>
+                            <i class="fas fa-file-import mr-2"></i> ដាក់ចូល (Import)<br><span class="text-[10px] opacity-70">(JSON or Excel/CSV)</span>
                             <input type="file" id="import-input" onchange="dataManager.prepareImport(this)" class="hidden" accept=".json, .csv">
                         </label>
                         <button onclick="dataManager.exportCSV()" class="py-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-xl text-sm font-bold active:bg-green-100 hover:bg-green-100">
-                            <i class="fas fa-file-excel mr-2"></i> ៣. បញ្ចេញ Excel (All)
+                            <i class="fas fa-file-excel mr-2"></i> បញ្ចេញ Excel (All)
                         </button>
                     </div>
                 </div>
 
                 <div class="p-3 bg-yellow-50 dark:bg-yellow-900/10 rounded-xl border border-yellow-100 dark:border-yellow-800 text-xs text-yellow-700 dark:text-yellow-400 mb-4">
-                    <i class="fas fa-info-circle mr-1"></i> <b>ចំណាំ៖</b> មុខងារ Import ថ្មីអាចទទួលឯកសារ <b>.JSON</b> (ពី Backup) និង <b>.CSV</b> (ពី Excel) បានទាំងអស់។
+                    <i class="fas fa-info-circle mr-1"></i> <b>ចំណាំ៖</b> មុខងារ Import អាចទទួលឯកសារ <b>.JSON</b> (ពី Backup) និង <b>.CSV</b> (ពី Excel) បានទាំងអស់។ សូមធ្វើការ BACKUP មុនលុបកម្មវិធី ឬផ្លាស់ប្ដូរទូរស័ព្ទ។
                 </div>
             </div>
             
@@ -588,13 +651,13 @@
             
             <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
                 <button onclick="dataManager.resetApp()" class="text-sm font-bold text-red-500 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 px-6 py-4 rounded-xl hover:bg-red-100 transition w-full">
-                    <i class="fas fa-exclamation-triangle mr-1"></i> ៤. លុបចោលទិន្ន័យទាំងអស់ (Reset)
+                    <i class="fas fa-exclamation-triangle mr-1"></i> លុបចោលទិន្ន័យទាំងអស់ (Reset)
                 </button>
             </div>
         </div>
     </main>
 
-    <div class="nav-container">
+    <div class="nav-container glass-panel">
         <div class="nav-item active" onclick="ui.switchTab('home')"><i class="fas fa-home text-lg"></i><span>ទំព័រដើម</span></div>
         <div class="nav-item" onclick="ui.switchTab('reports')"><i class="fas fa-chart-pie text-lg"></i><span>ស្ថិតិ</span></div>
         <div class="fab-wrapper"><div class="fab-button" onclick="ui.openOrderModal()"><i class="fas fa-plus"></i></div></div>
@@ -671,7 +734,7 @@
             <div id="invoice-actions" class="bg-gray-100 p-4 flex justify-between gap-3 border-t border-gray-200">
                 <button onclick="ui.closeModal('invoice-modal')" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-bold text-xs">បិទ</button>
                 <button onclick="ui.saveInvoiceAsImage()" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-xs shadow hover:bg-blue-700"><i class="fas fa-image mr-2"></i> Save Img</button>
-                <button onclick="print()" class="flex-1 px-4 py-2 rounded-lg bg-teal-600 text-white font-bold text-xs shadow-lg hover:bg-teal-700"><i class="fas fa-print mr-2"></i> Print / PDF</button>
+                <button onclick="ui.printCurrentInvoice()" class="flex-1 px-4 py-2 rounded-lg bg-teal-600 text-white font-bold text-xs shadow-lg hover:bg-teal-700"><i class="fas fa-print mr-2"></i> Print / PDF</button>
             </div>
         </div>
     </div>
@@ -684,50 +747,69 @@
         <div id="trash-list" class="p-4 space-y-3 pb-24"></div>
     </div>
 
-    <script>
+    <div id="modal-confirm-overlay" class="fixed inset-0 bg-black/60 z-[10000] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="confirm-box bg-white dark:bg-gray-800 w-[85%] max-w-[320px] p-6 rounded-2xl shadow-2xl animate-pop-in text-center">
+            <div id="confirm-icon-box" class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-100 text-red-500 dark:bg-red-900/30">
+                <i id="confirm-icon" class="fas fa-exclamation-triangle text-2xl"></i>
+            </div>
+            <h3 id="confirm-title" class="text-lg font-bold text-gray-800 dark:text-white mb-2 font-serif-kh">បញ្ជាក់សកម្មភាព?</h3>
+            <p id="confirm-desc" class="text-sm text-gray-500 dark:text-gray-400 mb-6 font-sans">តើអ្នកពិតជាចង់បន្តសកម្មភាពនេះមែនទេ?</p>
+            <div class="flex gap-3">
+                <button onclick="ui.closeConfirm()" class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition">ត្រឡប់ក្រោយ</button>
+                <button id="btn-confirm-yes" onclick="ui.onConfirmYes()" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-700 transition">យល់ព្រម</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-import-overlay" class="fixed inset-0 bg-black/60 z-[10000] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="confirm-box bg-white dark:bg-gray-800 w-[85%] max-w-[320px] p-6 rounded-2xl shadow-2xl animate-slide-up text-center">
+            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-file-import text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2 font-serif-kh">បញ្ចូលទិន្ន័យ?</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4" id="import-msg-count">បានរកឃើញ ... ទិន្ន័យ</p>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('modal-import-overlay').classList.add('hidden')" class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm bg-transparent">បោះបង់</button>
+                <button id="btn-confirm-import" class="flex-1 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-200 dark:shadow-none">យល់ព្រម</button>
+            </div>
+        </div>
+    </div>
+
+<script>
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(reg => console.log('SW Registered!', reg.scope)).catch(err => console.log('SW Error:', err)); }); }
 
         window.onerror = (m) => { document.getElementById('app-loader').style.display = 'none'; console.error(m); };
         
-        // --- V67: ADVANCED SMART SCROLL LOGIC ---
-        // Uses "Accumulator" logic to prevent jitter and accidental triggers
         let lastScrollTop = 0; 
-        let scrollUpAccumulator = 0; // Tracks intention to scroll up
+        let scrollUpAccumulator = 0; 
         const homeHeader = document.getElementById('home-header-container');
         const reportHeader = document.getElementById('report-header-container');
-        
+
         window.addEventListener('scroll', () => { 
             const s = window.pageYOffset || document.documentElement.scrollTop; 
             const delta = s - lastScrollTop;
-
-            if (s <= 0) { // Top of page, always show
+            if (s <= 0) { 
                 homeHeader.classList.remove('hide-ui');
                 reportHeader.classList.remove('hide-ui');
+                scrollUpAccumulator = 0; 
                 return;
             }
-
             if (delta > 0) {
-                // SCROLLING DOWN: Hide FAST
-                scrollUpAccumulator = 0; // Reset up-counter
-                if (s > 60) { // Threshold for hiding (quick)
+                scrollUpAccumulator = 0; 
+                if (s > 60) { 
                     homeHeader.classList.add('hide-ui');
                     reportHeader.classList.add('hide-ui');
                 }
             } else {
-                // SCROLLING UP: Show SLOW (Accumulate delta)
-                scrollUpAccumulator += delta; // delta is negative here
-                
-                // You must scroll UP by at least 120px total to trigger the show
-                // This prevents "stop/touch" jitter
+                scrollUpAccumulator += delta; 
                 if (scrollUpAccumulator < -120) { 
                     homeHeader.classList.remove('hide-ui');
                     reportHeader.classList.remove('hide-ui');
                 }
             }
             lastScrollTop = s; 
-        }, { passive: true }); // Improve scroll performance
+        }, { passive: true });
 
-        // --- APP LOGIC (FULL CODE - NO SKIPPING) ---
         const DB_CONFIG = { name: 'ShopProV67', version: 1, store: 'orders' }; let dbConn;
         let deleteIdTarget = null;
         let fpStart, fpEnd;
@@ -764,31 +846,192 @@
                 app.logs = logs.sort((a,b)=>b.id-a.id);
                 ui.renderHome(); ui.renderStats(); ui.renderHistory(); 
             },
-            calc: (o) => { const inc = (parseFloat(o.valSale)||0) + (parseFloat(o.valShipIn)||0); const exp = (parseFloat(o.costBuy)||0) + (parseFloat(o.costShip)||0) + (parseFloat(o.costBoost)||0); return { income: inc, expense: exp, profit: inc - exp, cogs: parseFloat(o.costBuy)||0, shipExp: parseFloat(o.costShip)||0, boost: parseFloat(o.costBoost)||0, sale: parseFloat(o.valSale)||0, shipIn: parseFloat(o.valShipIn)||0 }; },
+            calc: (o) => { 
+                // ការពារការបញ្ចូលលេខអវិជ្ជមាន (Logic Fix #3)
+                const vSale = Math.abs(parseFloat(o.valSale)||0);
+                const vShipIn = Math.abs(parseFloat(o.valShipIn)||0);
+                const cBuy = Math.abs(parseFloat(o.costBuy)||0);
+                const cShip = Math.abs(parseFloat(o.costShip)||0);
+                const cBoost = Math.abs(parseFloat(o.costBoost)||0);
+
+                // ដោះស្រាយបញ្ហា Cancelled (Logic Fix #1)
+                const isCancel = o.status === 'cancelled';
+
+                // បើ Cancelled: ចំណូល=0, ថ្លៃដើមទំនិញ=0 (ព្រោះបានរបស់វិញ), តែថ្លៃដឹកចេញ និង Boost ត្រូវរាប់ថាខាត
+                const sale = isCancel ? 0 : vSale;
+                const shipIn = isCancel ? 0 : vShipIn;
+                const costBuy = isCancel ? 0 : cBuy; 
+
+                const inc = sale + shipIn;
+                const exp = costBuy + cShip + cBoost; // រាប់បញ្ចូលថ្លៃដឹកចេញ និង Boost ជានិច្ចទោះ Cancel ក៏ដោយ
+
+                return { income: inc, expense: exp, profit: inc - exp, cogs: costBuy, shipExp: cShip, boost: cBoost, sale: sale, shipIn: shipIn }; 
+            },
             logActivity: async (msg) => { 
                 const log = { id: Date.now(), msg: msg, time: new Date().toLocaleTimeString('km-KH') };
                 await db.put(log, 'logs');
-                app.logs.unshift(log); // Add to local array
-                ui.renderHistory(); // Update UI immediately
+                app.logs.unshift(log); 
+                ui.renderHistory(); 
             }
         };
 
         const ui = {
+            // ៣.១ បន្ថែម function ថ្មីនេះចូលក្នុង ui = { ... } (ដាក់កន្លែងណាក៏បានក្នុង ui)
+            printCurrentInvoice: () => {
+            const printBtn = document.querySelector('#invoice-actions button:last-child');
+                const originalText = printBtn.innerHTML;
+                printBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+                // ១. បង្ហាញ Class
+                document.body.classList.add('printing-invoice');
+                
+                // ២. រង់ចាំ 500ms ឱ្យទូរស័ព្ទ Render ទាន់សិន ចាំហៅ Print
+                setTimeout(() => {
+                    window.print();
+                    
+                    // ៣. រង់ចាំ 1 វិនាទីក្រោយមក ចាំលាក់វិញ (ដើម្បីឱ្យប្រាកដថាទូរស័ព្ទចាប់យករូបភាពហើយ)
+                    setTimeout(() => {
+                        document.body.classList.remove('printing-invoice');
+                        printBtn.innerHTML = originalText;
+                    }, 1000);
+                }, 500);    
+            },
+
+            // ៣.២ កែប្រែ function generatePDFStatement ដែលមានស្រាប់ ឱ្យដូចខាងក្រោម៖
+            generatePDFStatement: () => {
+                const data = ui.getFilteredReportData();
+                if(data.length === 0) { ui.showToast("⚠️ គ្មានទិន្ន័យសម្រាប់ Download"); return; }
+                
+                const start = document.getElementById('date-start').value;
+                const end = document.getElementById('date-end').value;
+                const genDate = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+                
+                let tSale=0, tExp=0, tProf=0, tQty=0;
+                
+                let tableRows = '';
+                data.forEach(o => {
+                    const f = app.calc(o); 
+                    tSale += f.income; tExp += f.expense; tProf += f.profit; tQty += parseInt(o.prodQty);
+                    
+                    const profitClass = f.profit >= 0 ? 'print-text-teal' : 'print-text-red';
+                    
+                    // បង្កើត Status Badge
+                    let statusBadge = '';
+                    if(o.status === 'pending') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fff7ed; color:#c2410c; border-radius:3px; border:1px solid #ffedd5;">PENDING</span>';
+                    else if(o.status === 'cancelled') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fef2f2; color:#b91c1c; border-radius:3px; border:1px solid #fee2e2;">CANCEL</span>';
+
+                    tableRows += `
+                        <tr>
+                            <td style="width: 15%;">${new Date(o.updatedAt).toLocaleDateString()}</td>
+                            <td style="width: 25%;">
+                                <div style="font-weight:bold; color:#1e293b;">${o.custName}</div>
+                                <div style="font-size:9px; color:#64748b; margin-top:2px;">${o.custPhone}</div>
+                            </td>
+                            <td style="width: 25%;">
+                                <div style="color:#334155;">${o.prodName} <span style="color:#94a3b8; font-size:10px;">(${o.prodSize||'-'})</span></div>
+                                <div style="margin-top:2px;">${statusBadge}</div>
+                            </td>
+                            <td style="width: 10%; text-align:center; font-weight:bold;">${o.prodQty}</td>
+                            <td style="width: 12%; text-align:right; font-family:monospace; font-size:12px;">$${f.income.toFixed(2)}</td>
+                            <td style="width: 13%; text-align:right; font-family:monospace; font-size:12px; font-weight:bold;" class="${profitClass}">
+                                ${f.profit >= 0 ? '+' : ''}$${f.profit.toFixed(2)}
+                            </td>
+                        </tr>`;
+                });
+
+                const printArea = document.getElementById('print-area');
+                printArea.innerHTML = `
+                    <div>
+                        <div style="width:100%; height:6px; background: linear-gradient(90deg, #0d9488 0%, #0f766e 100%); margin-bottom: 30px;"></div>
+
+                        <div class="flex justify-between items-start mb-10">
+                            <div>
+                                <h1 style="font-family: 'Times New Roman', serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #0f766e; text-transform: uppercase; margin-bottom: 5px;">Bosba Ladies Dress</h1>
+                                <p style="font-size: 11px; color: #64748b; line-height: 1.5;">
+                                    Phnom Penh, Cambodia<br>
+                                    Professional Fashion & Retail
+                                </p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 24px; font-weight: 300; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">Statement</div>
+                                <div style="margin-top: 8px; font-size: 11px; color: #334155;">
+                                    <strong>Period:</strong> ${start} — ${end}<br>
+                                    <strong>Date:</strong> ${genDate}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+                            <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 5px;">Total Revenue</div>
+                                <div style="font-size: 22px; font-weight: 700; color: #334155;">$${tSale.toFixed(2)}</div>
+                            </div>
+                            <div style="flex: 1; padding: 15px; background: #fff1f2; border: 1px solid #ffe4e6; border-radius: 8px;">
+                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #be123c; letter-spacing: 0.5px; margin-bottom: 5px;">Total Expenses</div>
+                                <div style="font-size: 22px; font-weight: 700; color: #be123c;">$${tExp.toFixed(2)}</div>
+                            </div>
+                            <div style="flex: 1; padding: 15px; background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 8px;">
+                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #0f766e; letter-spacing: 0.5px; margin-bottom: 5px;">Net Profit</div>
+                                <div style="font-size: 22px; font-weight: 700; color: #0d9488;">$${tProf.toFixed(2)}</div>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Date</th>
+                                    <th style="text-align:left;">Customer</th>
+                                    <th style="text-align:left;">Product Details</th>
+                                    <th style="text-align:center;">Qty</th>
+                                    <th style="text-align:right;">Amount</th>
+                                    <th style="text-align:right;">Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color: #fff; border-top: 2px solid #334155;">
+                                    <td colspan="3" style="text-align:right; padding-top: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase;">Grand Total</td>
+                                    <td style="text-align:center; padding-top: 15px; font-weight: bold; font-size: 13px;">${tQty}</td>
+                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 13px;">$${tSale.toFixed(2)}</td>
+                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 14px; color: #0f766e;">$${tProf.toFixed(2)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                            <p style="font-family: 'Times New Roman', serif; font-style: italic; color: #64748b; font-size: 12px; margin-bottom: 5px;">Thank you for your business!</p>
+                            <p style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Generated by Bosba System • All Rights Reserved</p>
+                        </div>
+                    </div>
+                `;
+                
+                // EXECUTE PRINT
+                printArea.classList.remove('hidden'); 
+                document.body.classList.add('printing-statement'); 
+                
+                setTimeout(() => {
+                    window.print();
+                    setTimeout(() => {
+                        document.body.classList.remove('printing-statement');
+                        printArea.classList.add('hidden'); 
+                    }, 1000);
+                }, 500);
+            },
             showToast: (msg) => { const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); },
             toggleTheme: () => { document.documentElement.classList.toggle('dark'); const isDark = document.documentElement.classList.contains('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); document.getElementById('theme-icon').className = isDark ? 'fas fa-sun text-yellow-300' : 'fas fa-moon text-white'; },
             
             switchTab: (tabId) => { 
                 if(tabId !== 'home') history.pushState({page: tabId}, null, '');
                 
-                // --- FIX NAVIGATION ACTIVE STATE ---
-                // Correct mapping: Home(0), Reports(1), History(2), Settings(3)
                 const navItems = document.querySelectorAll('.nav-item');
                 navItems.forEach(el => el.classList.remove('active'));
 
                 if(tabId === 'home') navItems[0].classList.add('active');
                 if(tabId === 'reports') navItems[1].classList.add('active');
-                if(tabId === 'history') navItems[2].classList.add('active'); // Index 2 is History
-                if(tabId === 'settings') navItems[3].classList.add('active'); // Index 3 is Settings
+                if(tabId === 'history') navItems[2].classList.add('active'); 
+                if(tabId === 'settings') navItems[3].classList.add('active'); 
                 
                 document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active')); 
                 document.getElementById(`view-${tabId}`).classList.add('active'); 
@@ -799,15 +1042,23 @@
                 if (tabId === 'home') {
                     homeHeader.style.display = 'block';
                     reportHeader.style.display = 'none';
+                    homeHeader.classList.remove('hide-ui');
                     window.scrollTo(0,0);
                 } else if (tabId === 'reports') {
                     homeHeader.style.display = 'none';
                     reportHeader.style.display = 'block';
+                    reportHeader.classList.remove('hide-ui');
                     ui.renderStats();
                     window.scrollTo(0,0);
                 } else {
                     homeHeader.style.display = 'none';
                     reportHeader.style.display = 'none';
+                }
+                
+                if (tabId === 'history') {
+                    if (typeof renderProfessionalHistory === 'function') {
+                        renderProfessionalHistory();
+                    }
                 }
             },
             
@@ -866,26 +1117,82 @@
                 if(!sStr || !eStr) return [];
                 const s = new Date(sStr); const e = new Date(eStr);
                 s.setHours(0,0,0,0); e.setHours(23,59,59,999);
-                return app.data.filter(o => { if(o.isDeleted || o.status === 'cancelled') return false; const d = new Date(o.updatedAt); return d >= s && d <= e; });
+                
+                return app.data.filter(o => { 
+                    // កែប្រែ៖ ដក "|| o.status === 'cancelled'" ចេញ ដើម្បីឱ្យប្រព័ន្ធរាប់បញ្ចូលការខាតបង់លើការកុម្មង់ដែលបរាជ័យ
+                    if(o.isDeleted) return false; 
+                    const d = new Date(o.updatedAt); 
+                    return d >= s && d <= e; 
+                });
+            },
+            openDrillDown: (type) => {
+                const data = ui.getFilteredReportData();
+                const start = document.getElementById('date-start').value;
+                const end = document.getElementById('date-end').value;
+                const modal = document.getElementById('modal-drilldown');
+                const title = document.getElementById('drill-title');
+                const sub = document.getElementById('drill-subtitle');
+                const content = document.getElementById('drill-content');
+                const footer = document.getElementById('drill-footer');
+                
+                modal.classList.remove('hidden');
+                sub.innerText = `ចន្លោះកាលបរិច្ឆេទ: ${start} ដល់ ${end}`;
+                footer.classList.add('hidden');
+
+                if (type === 'orders') {
+                    title.innerHTML = '<i class="fas fa-shopping-cart text-blue-600 mr-2"></i> បញ្ជីការលក់ (Orders List)';
+                    footer.classList.remove('hidden');
+                    if (data.length === 0) { content.innerHTML = '<div class="text-center text-gray-400 mt-10">គ្មានទិន្ន័យ</div>'; return; }
+                    let html = '<div class="space-y-3">';
+                    data.forEach(o => {
+                        const f = app.calc(o);
+                        html += `<div class="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 shadow-sm active:scale-95 transition cursor-pointer" onclick="ui.openOrderModal(${o.id})"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-xs">${o.prodQty}</div><div><div class="font-bold text-gray-800 dark:text-gray-200 text-sm">${o.custName}</div><div class="text-xs text-gray-500">${o.prodName}</div></div></div><div class="text-right"><div class="font-bold text-teal-600">$${f.income.toFixed(2)}</div><div class="text-[10px] text-gray-400">Profit: $${f.profit.toFixed(2)}</div></div></div>`;
+                    });
+                    content.innerHTML = html + '</div>';
+
+                } else if (type === 'profit') {
+                    title.innerHTML = '<i class="fas fa-coins text-emerald-600 mr-2"></i> ប្រភពប្រាក់ចំណេញ (P&L)';
+                    let tSale=0, tCogs=0, tExp=0, tProf=0;
+                    data.forEach(o => { const f=app.calc(o); tSale+=f.sale; tCogs+=f.cogs; tExp+=(f.expense-f.cogs); tProf+=f.profit; });
+
+                    content.innerHTML = `
+                        <div class="space-y-4 font-sans">
+                            <div class="flex justify-between items-center p-4 bg-blue-50 rounded-2xl border border-blue-100"><div><span class="block text-xs text-blue-500 font-bold uppercase">ចំណូលពីការលក់</span></div><div class="text-xl font-bold text-blue-700">$${tSale.toFixed(2)}</div></div>
+                            <div class="flex justify-center"><i class="fas fa-minus text-gray-300"></i></div>
+                            <div class="flex justify-between items-center p-3 bg-red-50 rounded-xl border border-red-100"><div><span class="text-sm text-gray-600">ថ្លៃដើម (COGS)</span></div><div class="font-bold text-red-500">-$${tCogs.toFixed(2)}</div></div>
+                            <div class="flex justify-between items-center p-3 bg-orange-50 rounded-xl border border-orange-100"><div><span class="text-sm text-gray-600">ចំណាយផ្សេងៗ</span></div><div class="font-bold text-orange-500">-$${tExp.toFixed(2)}</div></div>
+                            <div class="border-b-2 border-dashed border-gray-300 my-2"></div>
+                            <div class="flex justify-between items-center p-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg text-white"><div><span class="block text-xs text-emerald-100 font-bold uppercase">ចំណេញសុទ្ធ (Net Profit)</span></div><div class="text-3xl font-bold">$${tProf.toFixed(2)}</div></div>
+                        </div>`;
+
+                } else if (type === 'margin') {
+                    title.innerHTML = '<i class="fas fa-chart-pie text-purple-600 mr-2"></i> វិភាគ Margin %';
+                    let tInc=0, tCogs=0, tExp=0, nProf=0;
+                    data.forEach(o => { const f=app.calc(o); tInc+=(f.sale+f.shipIn); tCogs+=f.cogs; tExp+=(f.shipExp+f.boost); nProf+=f.profit; });
+                    if(tInc === 0) tInc = 1; 
+                    const pP = Math.round((nProf/tInc)*100); const pC = Math.round((tCogs/tInc)*100); const pE = Math.round((tExp/tInc)*100);
+                    
+                    const chartStyle = `background: conic-gradient(#0d9488 0% ${pP}%, #ef4444 ${pP}% ${pP+pC}%, #f97316 ${pP+pC}% 100%);`;
+
+                    content.innerHTML = `
+                        <div class="flex flex-col items-center justify-center pt-4">
+                            <div class="relative w-48 h-48 rounded-full shadow-inner mb-6" style="${chartStyle}"><div class="absolute inset-4 bg-white dark:bg-gray-800 rounded-full flex flex-col items-center justify-center shadow-lg"><span class="text-gray-400 text-xs uppercase font-bold">Margin</span><span class="text-4xl font-extrabold text-teal-600">${pP}%</span></div></div>
+                            <div class="w-full bg-gray-50 dark:bg-gray-700/30 rounded-2xl p-4 space-y-3">
+                                <div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-teal-600"></div><span class="text-sm">ចំណេញ (Profit)</span></div><span class="font-bold text-teal-600">${pP}%</span></div>
+                                <div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-red-500"></div><span class="text-sm">ថ្លៃដើម (COGS)</span></div><span class="font-bold text-red-500">${pC}%</span></div>
+                                <div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-orange-500"></div><span class="text-sm">ចំណាយ (Exp)</span></div><span class="font-bold text-orange-500">${pE}%</span></div>
+                            </div>
+                        </div>`;
+                }
             },
 
             renderStats: () => {
-                // 1. LIFETIME STATS CALCULATION
                 let allTimeProfit = 0;
                 let allTimeOrders = 0;
-                
-                app.data.forEach(o => {
-                    if(!o.isDeleted && o.status === 'completed') {
-                        const f = app.calc(o);
-                        allTimeProfit += f.profit;
-                        allTimeOrders++;
-                    }
-                });
-                
+                app.data.forEach(o => { if(!o.isDeleted && o.status === 'completed') { const f = app.calc(o); allTimeProfit += f.profit; allTimeOrders++; } });
                 document.getElementById('lbl-lifetime-profit').innerText = `$${allTimeProfit.toFixed(2)}`;
                 document.getElementById('lbl-lifetime-orders').innerText = allTimeOrders;
 
-                // 2. FILTERED STATS CALCULATION
                 const data = ui.getFilteredReportData();
                 let totalInc=0, totalCogs=0, totalShip=0, totalAds=0, netProfit=0, shippingIn=0;
                 let prodMap = {};
@@ -896,9 +1203,26 @@
                     if(!prodMap[o.prodName]) prodMap[o.prodName] = 0; prodMap[o.prodName] += parseInt(o.prodQty);
                 });
 
-                document.getElementById('rpt-order-count').innerText = data.length;
-                document.getElementById('rpt-net-profit').innerText = `$${netProfit.toFixed(2)}`;
+                // === កែប្រែត្រង់នេះ (Drill Down Triggers) ===
+                const elCount = document.getElementById('rpt-order-count');
+                elCount.innerText = data.length;
+                // ធ្វើឱ្យ Card Order ចុចបាន
+                elCount.parentElement.onclick = () => ui.openDrillDown('orders');
+                elCount.parentElement.className = "report-item relative overflow-hidden bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 cursor-pointer active:scale-95 transition hover:shadow-lg";
+
+                const elProfit = document.getElementById('rpt-net-profit');
+                elProfit.innerText = `$${netProfit.toFixed(2)}`;
+                // ធ្វើឱ្យ Card Profit ចុចបាន
+                elProfit.parentElement.onclick = () => ui.openDrillDown('profit');
+                elProfit.parentElement.className = "report-item card-gradient-green relative overflow-hidden cursor-pointer active:scale-95 transition hover:shadow-lg";
+
                 document.getElementById('rpt-total-income').innerText = `$${totalInc.toFixed(2)}`;
+                
+                // ធ្វើឱ្យ Card Margin ចុចបាន
+                const elMargin = document.getElementById('rpt-margin');
+                elMargin.parentElement.onclick = () => ui.openDrillDown('margin');
+                elMargin.parentElement.className = "bg-gray-50 dark:bg-gray-800 rounded-xl p-3 mt-2 flex justify-between items-center border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition";
+                // ============================================
                 document.getElementById('rpt-shipping-in').innerText = `$${shippingIn.toFixed(2)}`;
                 document.getElementById('rpt-cogs-total').innerText = `$${totalCogs.toFixed(2)}`;
                 document.getElementById('rpt-ship-exp').innerText = `$${totalShip.toFixed(2)}`;
@@ -907,65 +1231,14 @@
                 document.getElementById('rpt-margin').innerText = `${margin.toFixed(1)}%`;
 
                 const sortedProds = Object.entries(prodMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-                const list = document.getElementById('top-products-list');
-                list.innerHTML = '';
+                const list = document.getElementById('top-products-list'); list.innerHTML = '';
                 if(sortedProds.length === 0) list.innerHTML = '<div class="p-4 text-center text-xs text-gray-400">មិនមានទិន្ន័យ</div>';
                 sortedProds.forEach(([name, qty]) => {
                     list.innerHTML += `<div class="p-3 flex justify-between items-center text-sm"><span class="text-gray-700 dark:text-gray-300 font-bold truncate pr-2">${name}</span><span class="px-2 py-1 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-md">${qty} Sold</span></div>`;
                 });
             },
 
-            // --- HISTORY TIMELINE RENDER FUNCTION ---
-            renderHistory: () => {
-                const container = document.getElementById('activity-log');
-                if(!app.logs || app.logs.length === 0) {
-                    container.innerHTML = '<div class="text-center mt-20 text-gray-400 italic"><i class="fas fa-history text-3xl mb-2 opacity-50"></i><p>មិនទាន់មានសកម្មភាព</p></div>';
-                    return;
-                }
-                
-                let html = '<div class="relative pl-4 space-y-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">';
-                let lastDate = '';
-
-                app.logs.slice(0, 50).forEach(log => {
-                    const date = new Date(log.id);
-                    const dateStr = date.toLocaleDateString('km-KH');
-                    const isNewDay = dateStr !== lastDate;
-                    
-                    if(isNewDay) {
-                         html += `<div class="relative">
-                            <span class="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-bold px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 -ml-6 relative z-10">${dateStr}</span>
-                        </div>`;
-                        lastDate = dateStr;
-                    }
-
-                    let icon = 'fa-circle';
-                    let color = 'text-gray-400';
-                    let bg = 'bg-gray-100';
-
-                    if(log.msg.includes('បង្កើត')) { icon = 'fa-plus'; color = 'text-green-500'; bg = 'bg-green-50 dark:bg-green-900/20'; }
-                    else if(log.msg.includes('លុប')) { icon = 'fa-trash'; color = 'text-red-500'; bg = 'bg-red-50 dark:bg-red-900/20'; }
-                    else if(log.msg.includes('Restore')) { icon = 'fa-undo'; color = 'text-blue-500'; bg = 'bg-blue-50 dark:bg-blue-900/20'; }
-
-                    html += `
-                    <div class="relative pl-6">
-                        <div class="absolute -left-[5px] top-1 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${color.replace('text', 'bg')} z-10"></div>
-                        <div class="flex items-start justify-between bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full ${bg} ${color} flex items-center justify-center flex-shrink-0">
-                                    <i class="fas ${icon} text-xs"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-200">${log.msg}</p>
-                                </div>
-                            </div>
-                            <span class="text-[10px] text-gray-400 font-mono whitespace-nowrap ml-2">${log.time}</span>
-                        </div>
-                    </div>`;
-                });
-                
-                html += '</div>';
-                container.innerHTML = html;
-            },
+            renderHistory: () => { if (typeof renderProfessionalHistory === 'function') { renderProfessionalHistory(); } },
 
             exportReportCSV: () => {
                 const data = ui.getFilteredReportData();
@@ -976,51 +1249,124 @@
                 const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Report_${document.getElementById('date-start').value}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             },
             
-            // --- V67: PROFESSIONAL PDF GENERATION (NATIVE PRINT) ---
             generatePDFStatement: () => {
                 const data = ui.getFilteredReportData();
                 if(data.length === 0) { ui.showToast("⚠️ គ្មានទិន្ន័យសម្រាប់ Download"); return; }
                 
-                // Fill Summary
                 const start = document.getElementById('date-start').value;
                 const end = document.getElementById('date-end').value;
-                document.getElementById('print-date-range').innerText = `${start} to ${end}`;
-                document.getElementById('print-gen-date').innerText = new Date().toLocaleString('km-KH');
+                const genDate = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
                 
-                let tSale=0, tExp=0, tProf=0;
-                const tableBody = document.getElementById('print-table-body');
-                tableBody.innerHTML = '';
-
+                let tSale=0, tExp=0, tProf=0, tQty=0;
+                
+                // រៀបចំទិន្ន័យក្នុងតារាង
+                let tableRows = '';
                 data.forEach(o => {
-                    const f = app.calc(o);
-                    tSale += f.income;
-                    tExp += f.expense;
-                    tProf += f.profit;
+                    const f = app.calc(o); 
+                    tSale += f.income; tExp += f.expense; tProf += f.profit; tQty += parseInt(o.prodQty);
                     
-                    const row = `<tr>
-                        <td class="text-left text-gray-500">${new Date(o.updatedAt).toLocaleDateString()}</td>
-                        <td class="text-left font-bold text-gray-800">${o.custName}</td>
-                        <td class="text-left text-gray-700">${o.prodName} <span class="text-xs text-gray-400">(${o.prodSize||'-'})</span></td>
-                        <td class="text-center font-bold">${o.prodQty}</td>
-                        <td class="text-right text-gray-500">$${f.expense.toFixed(2)}</td>
-                        <td class="text-right text-gray-800">$${f.income.toFixed(2)}</td>
-                        <td class="text-right font-bold ${f.profit>=0?'text-teal-700':'text-red-500'}">$${f.profit.toFixed(2)}</td>
-                    </tr>`;
-                    tableBody.innerHTML += row;
+                    // កំណត់ពណ៌ឱ្យលេខចំណេញ/ខាត
+                    const profitClass = f.profit >= 0 ? 'text-teal-700' : 'text-red-600';
+                    const profitSign = f.profit >= 0 ? '' : '';
+
+                    tableRows += `
+                        <tr class="text-sm">
+                            <td class="text-left text-gray-600 font-mono">${new Date(o.updatedAt).toLocaleDateString()}</td>
+                            <td class="text-left font-bold text-gray-800">
+                                ${o.custName}
+                                <div class="text-[10px] text-gray-500 font-normal">${o.custPhone}</div>
+                            </td>
+                            <td class="text-left text-gray-700">
+                                ${o.prodName} <span class="text-xs text-gray-400">(${o.prodSize||'-'})</span>
+                                ${o.status !== 'completed' ? `<span class="text-[8px] border border-gray-300 px-1 rounded ml-1 uppercase">${o.status}</span>` : ''}
+                            </td>
+                            <td class="text-center font-bold">${o.prodQty}</td>
+                            <td class="text-right text-gray-500">$${f.income.toFixed(2)}</td>
+                            <td class="text-right font-bold ${profitClass}">${profitSign}$${f.profit.toFixed(2)}</td>
+                        </tr>`;
                 });
 
-                document.getElementById('print-total-sales').innerText = `$${tSale.toFixed(2)}`;
-                document.getElementById('print-total-exp').innerText = `$${tExp.toFixed(2)}`;
-                document.getElementById('print-net-profit').innerText = `$${tProf.toFixed(2)}`;
+                // បង្កើត HTML ថ្មីបែប Professional (Bosba Ladies Dress)
+                const printArea = document.getElementById('print-area');
+                printArea.innerHTML = `
+                    <div class="font-serif text-gray-900 max-w-4xl mx-auto">
+                        
+                        <div class="flex justify-between items-start border-b-4 border-teal-700 pb-6 mb-6">
+                            <div>
+                                <h1 class="text-2xl font-bold text-teal-800 uppercase tracking-widest mb-2">Bosba Ladies Dress</h1>
+                                <p class="text-sm text-gray-600">Phnom Penh, Cambodia</p>
+                                <p class="text-sm text-gray-600">Phone: 012 345 678</p> 
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-3xl font-bold text-gray-300 uppercase">Statement</h2>
+                                <div class="mt-2 text-sm">
+                                    <p><strong>Date Range:</strong> ${start} to ${end}</p>
+                                    <p><strong>Generated On:</strong> ${genDate}</p>
+                                </div>
+                            </div>
+                        </div>
 
-                // Trigger Browser Print (User saves as PDF)
-                window.print();
+                        <div class="grid grid-cols-3 gap-6 mb-8">
+                            <div class="p-4 bg-gray-50 border-l-4 border-teal-600">
+                                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Total Revenue (ចំណូល)</p>
+                                <p class="text-2xl font-bold text-gray-800">$${tSale.toFixed(2)}</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 border-l-4 border-red-400">
+                                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Total Expense (ចំណាយ)</p>
+                                <p class="text-2xl font-bold text-gray-800">$${tExp.toFixed(2)}</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 border-l-4 border-teal-800">
+                                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Net Profit (ចំណេញ)</p>
+                                <p class="text-2xl font-bold text-teal-800">$${tProf.toFixed(2)}</p>
+                            </div>
+                        </div>
+
+                        <table class="w-full mb-8">
+                            <thead>
+                                <tr class="bg-teal-50 border-b-2 border-teal-700">
+                                    <th class="text-left py-2 font-bold text-teal-800 uppercase text-xs w-24">Date</th>
+                                    <th class="text-left py-2 font-bold text-teal-800 uppercase text-xs">Customer</th>
+                                    <th class="text-left py-2 font-bold text-teal-800 uppercase text-xs">Details</th>
+                                    <th class="text-center py-2 font-bold text-teal-800 uppercase text-xs w-12">Qty</th>
+                                    <th class="text-right py-2 font-bold text-teal-800 uppercase text-xs w-24">Amount</th>
+                                    <th class="text-right py-2 font-bold text-teal-800 uppercase text-xs w-24">Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-gray-100 font-bold border-t-2 border-gray-300">
+                                    <td colspan="3" class="text-right py-3 uppercase text-xs">Grand Total</td>
+                                    <td class="text-center py-3">${tQty}</td>
+                                    <td class="text-right py-3">$${tSale.toFixed(2)}</td>
+                                    <td class="text-right py-3 text-teal-800">$${tProf.toFixed(2)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div class="text-center text-xs text-gray-400 mt-12 pt-4 border-t border-gray-200">
+                            <p>Thank you for your business!</p>
+                            <p>Bosba Ladies Dress - Professional Report System</p>
+                        </div>
+                    </div>
+                `;
+                
+                // === ដំណើរការ Print (Fix Mobile & Layout) ===
+                printArea.classList.remove('hidden'); 
+                document.body.classList.add('printing-statement'); 
+                
+                setTimeout(() => {
+                    window.print();
+                    setTimeout(() => {
+                        document.body.classList.remove('printing-statement');
+                        printArea.classList.add('hidden'); 
+                    }, 1000);
+                }, 500);
             },
-
             shareReportText: () => {
                 const p = document.getElementById('rpt-net-profit').innerText; const o = document.getElementById('rpt-order-count').innerText; const s = document.getElementById('rpt-total-income').innerText; 
-                const start = document.getElementById('date-start').value; 
-                const end = document.getElementById('date-end').value;
+                const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value;
                 const text = `📊 របាយការណ៍សង្ខេប (${start} - ${end})\n------------------------\n💰 ចំណេញសុទ្ធ: ${p}\n📦 ចំនួនលក់: ${o}\n💵 ចំណូលសរុប: ${s}\n------------------------\nបង្កើតដោយ: My Small Shop App`;
                 navigator.clipboard.writeText(text); ui.showToast("📋 បានចម្លងអក្សររបាយការណ៍!");
             },
@@ -1041,7 +1387,6 @@
                     const f = app.calc(o); 
                     const totalPay = (parseFloat(o.valSale)||0) + (parseFloat(o.valShipIn)||0);
                     const el = document.createElement('div');
-                    
                     let st = { bg: 'bg-orange-50', text: 'text-orange-600', strip: 'bg-orange-400', label: 'រង់ចាំ', icon: 'fa-clock' };
                     if(o.status === 'ordered') st = { bg: 'bg-blue-50', text: 'text-blue-600', strip: 'bg-blue-500', label: 'បានកុម្មង់', icon: 'fa-cart-shopping' };
                     if(o.status === 'shipping') st = { bg: 'bg-indigo-50', text: 'text-indigo-600', strip: 'bg-indigo-500', label: 'កំពុងដឹក', icon: 'fa-truck-fast' };
@@ -1049,17 +1394,11 @@
                     if(o.status === 'cancelled') st = { bg: 'bg-red-50', text: 'text-red-600', strip: 'bg-red-500', label: 'បោះបង់', icon: 'fa-circle-xmark' };
                     
                     let paymentHtml = '';
-                    if(o.status === 'completed') {
-                        paymentHtml = `<span class="text-emerald-600 font-bold text-[11px] flex items-center gap-1"><i class="fas fa-check-circle"></i> ទូទាត់រួច</span>`;
-                    } else if(o.status !== 'cancelled') {
-                        paymentHtml = `<span class="text-orange-500 font-bold text-[11px] flex items-center gap-1"><i class="fas fa-clock"></i> រង់ចាំការទូទាត់: $${totalPay.toFixed(2)}</span>`;
-                    } else {
-                        paymentHtml = `<span class="text-gray-400 font-bold text-[11px]">-</span>`;
-                    }
+                    if(o.status === 'completed') paymentHtml = `<span class="text-emerald-600 font-bold text-[11px] flex items-center gap-1"><i class="fas fa-check-circle"></i> ទូទាត់រួច</span>`;
+                    else if(o.status !== 'cancelled') paymentHtml = `<span class="text-orange-500 font-bold text-[11px] flex items-center gap-1"><i class="fas fa-clock"></i> រង់ចាំការទូទាត់: $${totalPay.toFixed(2)}</span>`;
+                    else paymentHtml = `<span class="text-gray-400 font-bold text-[11px]">-</span>`;
 
-                    el.className = 'order-card p-0 group'; 
-                    el.onclick = () => ui.openOrderModal(o.id);
-                    
+                    el.className = 'order-card p-0 group'; el.onclick = () => ui.openOrderModal(o.id);
                     el.innerHTML = `
                         <div class="card-strip ${st.strip}"></div>
                         <div class="p-5 pl-6">
@@ -1148,225 +1487,246 @@
                 } catch(e) { alert("Error: " + e); }
             },
 
-            confirmDelete: (id) => { history.pushState({modal: true}, null, ''); deleteIdTarget = id; document.getElementById('modal-confirm-overlay').classList.remove('hidden'); },
-            closeConfirm: () => { deleteIdTarget = null; document.getElementById('modal-confirm-overlay').classList.add('hidden'); },
-            executeDelete: async () => {
-                if(!deleteIdTarget) return;
-                const id = deleteIdTarget;
-                const item = app.data.find(x => x.id === id);
-                if(item) {
-                    item.isDeleted = true;
-                    ui.renderHome(); ui.closeConfirm(); ui.showToast('🗑️ បានលុប');
-                    await db.put(item); await app.logActivity(`បានលុប: ${item.prodName}`); ui.closeModal('modal-order');
+            confirmType: null, confirmId: null,
+            askConfirm: (type, id = null) => {
+                ui.confirmType = type; ui.confirmId = id;
+                const modal = document.getElementById('modal-confirm-overlay');
+                const title = document.getElementById('confirm-title'); const desc = document.getElementById('confirm-desc'); const iconBox = document.getElementById('confirm-icon-box'); const icon = document.getElementById('confirm-icon'); const btn = document.getElementById('btn-confirm-yes');
+                iconBox.className = 'w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4';
+                
+                if (type === 'delete') { title.innerText = 'លុបការលក់នេះ?'; desc.innerText = 'ទិន្ន័យនឹងត្រូវបានផ្លាស់ទីទៅធុងសំរាម។'; icon.className = 'fas fa-trash-alt text-2xl'; iconBox.classList.add('bg-red-100', 'text-red-500', 'dark:bg-red-900/30'); btn.className = 'flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-700 transition'; btn.innerText = 'យល់ព្រម'; } 
+                else if (type === 'restore') { title.innerText = 'ស្តារទិន្ន័យវិញ?'; desc.innerText = 'ទិន្ន័យនឹងត្រឡប់ទៅបញ្ជីការលក់វិញ។'; icon.className = 'fas fa-undo text-2xl'; iconBox.classList.add('bg-teal-100', 'text-teal-600', 'dark:bg-teal-900/30'); btn.className = 'flex-1 py-3 rounded-xl bg-teal-600 text-white font-bold text-sm shadow-lg shadow-teal-200 dark:shadow-none hover:bg-teal-700 transition'; btn.innerText = 'ស្តារវិញ'; } 
+                else if (type === 'empty_trash') { title.innerText = 'សម្អាតធុងសំរាម?'; desc.innerText = 'ទិន្ន័យទាំងអស់នឹងបាត់បង់ជាស្ថាពរ! មិនអាចយកវិញបានទេ។'; icon.className = 'fas fa-fire text-2xl'; iconBox.classList.add('bg-orange-100', 'text-orange-600', 'dark:bg-orange-900/30'); btn.className = 'flex-1 py-3 rounded-xl bg-orange-600 text-white font-bold text-sm shadow-lg shadow-orange-200 dark:shadow-none hover:bg-orange-700 transition'; btn.innerText = 'សម្អាត'; } 
+                else if (type === 'reset_app') { title.innerText = '⚠️ RESET APPLICATION?'; desc.innerHTML = 'សកម្មភាពនេះនឹងលុបចោលទិន្ន័យទាំងអស់!<br>ហើយមិនអាចត្រឡប់ក្រោយបានទេ។'; icon.className = 'fas fa-radiation text-3xl animate-pulse'; iconBox.classList.add('bg-red-600', 'text-white', 'shadow-xl', 'shadow-red-400'); btn.className = 'flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm shadow-xl shadow-red-300 dark:shadow-none hover:bg-red-700 transition border-2 border-white'; btn.innerText = 'លុបចោលទាំងអស់'; }
+                modal.classList.remove('hidden');
+            },
+            closeConfirm: () => { ui.confirmType = null; ui.confirmId = null; document.getElementById('modal-confirm-overlay').classList.add('hidden'); },
+            onConfirmYes: async () => {
+                const type = ui.confirmType; const id = ui.confirmId; ui.closeConfirm();
+                
+                if (type === 'delete' && id) { 
+                    const item = app.data.find(x => x.id === id); 
+                    if(item) { item.isDeleted = true; ui.renderHome(); ui.showToast('🗑️ បានលុបទៅធុងសំរាម'); await db.put(item); await app.logActivity(`បានលុប: ${item.prodName}`); ui.closeModal('modal-order'); } 
+                } 
+                else if (type === 'restore' && id) { 
+                    const item = app.data.find(x => x.id === id); 
+                    if(item) { item.isDeleted = false; ui.renderTrashList(); ui.renderHome(); ui.renderStats(); ui.showToast('♻️ បានយកមកវិញ'); await db.put(item); await app.logActivity(`បាន Restore: ${item.prodName}`); } 
+                } 
+                else if (type === 'empty_trash') { 
+                    // === ចំណុចបានកែប្រែ (FIXED) ===
+                    // ១. ចាប់យកទិន្ន័យដែលត្រូវលុបទុកសិន
+                    const trash = app.data.filter(x => x.isDeleted); 
+                    
+                    // ២. លុបចេញពីអេក្រង់ និង Memory ភ្លាមៗ (កុំរង់ចាំ DB)
+                    app.data = app.data.filter(x => !x.isDeleted); 
+                    ui.renderTrashList(); 
+                    ui.showToast('🧹 សម្អាតធុងសំរាមរួចរាល់!'); 
+
+                    // ៣. ធ្វើការលុបក្នុង Database តាមក្រោយ (Background Process)
+                    for(let t of trash) { await db.delete(t.id); } 
+                    await app.logActivity('បានសម្អាតធុងសំរាម'); 
+                    // =================================
+                } 
+                else if (type === 'reset_app') { 
+                    document.getElementById('app-loader').style.display = 'flex'; document.getElementById('loader-text').innerText = "កំពុងលុបចោលទិន្ន័យ..."; await db.clear(); await db.clear('logs'); localStorage.clear(); setTimeout(() => { location.reload(); }, 1500); 
                 }
             },
-
-            openTrashModal: async (fetchFromDB = false) => {
-                history.pushState({modal: true}, null, ''); 
-                if(fetchFromDB) await app.refresh(); 
-                const modal = document.getElementById('modal-trash');
-                modal.classList.remove('hidden');
-                ui.renderTrashList();
-            },
             
+            confirmDelete: (id) => ui.askConfirm('delete', id),
+            openTrashModal: async (fetchFromDB = false) => { history.pushState({modal: true}, null, ''); if(fetchFromDB) await app.refresh(); document.getElementById('modal-trash').classList.remove('hidden'); ui.renderTrashList(); },
             renderTrashList: () => {
-                const list = document.getElementById('trash-list');
-                list.innerHTML = '';
-                const deleted = app.data.filter(o => o.isDeleted);
+                const list = document.getElementById('trash-list'); list.innerHTML = ''; const deleted = app.data.filter(o => o.isDeleted);
                 if(deleted.length === 0) list.innerHTML = '<div class="text-center mt-20 text-gray-400"><i class="fas fa-trash-alt text-4xl mb-2"></i><p>ធុងសំរាមស្អាត</p></div>';
-                
                 deleted.forEach(o => {
-                    const d = document.createElement('div');
-                    d.className = 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl flex justify-between items-center';
+                    const d = document.createElement('div'); d.className = 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl flex justify-between items-center';
                     d.innerHTML = `<div><h4 class="font-bold text-gray-700 dark:text-gray-200 text-lg mb-1">${o.prodName}</h4><p class="text-sm text-gray-500 font-sans">${new Date(o.updatedAt).toLocaleDateString()}</p></div><button onclick="ui.restore(${o.id})" class="px-4 py-2 bg-teal-100 text-teal-800 text-sm font-bold rounded-lg hover:bg-teal-200 transition"><i class="fas fa-undo mr-1"></i> Restore</button>`;
                     list.appendChild(d);
                 });
             },
-
-            restore: async (id) => {
-                const item = app.data.find(x => x.id === id);
-                if(item) { item.isDeleted = false; ui.renderTrashList(); ui.renderHome(); ui.renderStats(); ui.showToast('♻️ បានយកមកវិញ'); await db.put(item); await app.logActivity(`បាន Restore: ${item.prodName}`); }
-            },
+            restore: (id) => ui.askConfirm('restore', id),
             
             openInvoice: (type) => {
                 history.pushState({modal: true}, null, ''); 
-                const id = parseInt(document.getElementById('entry-id').value);
-                const o = app.data.find(x => x.id === id); if(!o) return;
-                const f = app.calc(o); const viewer = document.getElementById('invoice-viewer');
+                const id = parseInt(document.getElementById('entry-id').value); 
+                const o = app.data.find(x => x.id === id); 
+                if(!o) return; 
+                const f = app.calc(o); 
+                const viewer = document.getElementById('invoice-viewer');
                 
-                let html = `<div id="invoice-capture" class="bg-white p-6 relative overflow-hidden" style="font-family: 'Battambang', sans-serif;"><div class="absolute top-0 left-0 w-full h-2 bg-teal-600"></div><div class="text-center mb-6 border-b-2 border-teal-500 pb-4"><h2 class="text-2xl font-bold text-teal-700">វិក្កយបត្រ</h2><p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">INVOICE #${o.id.toString().slice(-6)}</p><p class="text-[10px] text-gray-400 mt-0.5">${new Date().toLocaleString('km-KH')}</p></div><div class="flex justify-between text-[11px] mb-6"><div class="text-left"><span class="text-teal-600 font-bold block text-[9px] uppercase mb-1">Bill To:</span><span class="font-bold text-gray-800 text-sm block mb-0.5">${o.custName}</span><div class="text-gray-500">${o.custPhone}</div><div class="text-gray-500">${o.custAddr}</div></div><div class="text-right"><span class="text-teal-600 font-bold block text-[9px] uppercase mb-1">From:</span><span class="font-bold text-gray-800 text-sm block mb-0.5">MY SMALL SHOP</span><div class="text-gray-500">Phnom Penh, Cambodia</div></div></div><div class="mb-6"><div class="flex justify-between bg-teal-50 p-2 rounded-t-lg border-b-2 border-teal-100"><span class="text-[10px] font-bold text-teal-700 uppercase">បរិយាយ (Description)</span><span class="text-[10px] font-bold text-teal-700 uppercase">តម្លៃ (Price)</span></div><div class="flex justify-between items-center p-3 border-b border-gray-100"><div><div class="text-sm font-bold text-gray-800">${o.prodName}</div><div class="text-[10px] text-gray-500 mt-0.5">Size: ${o.prodSize || '-'} | Qty: ${o.prodQty}</div></div><div class="text-sm font-bold text-gray-800">$${f.sale.toFixed(2)}</div></div></div><div class="flex justify-end mb-6"><div class="w-1/2 space-y-1 text-right"><div class="flex justify-between text-[11px] text-gray-500"><span>សរុបរង:</span><span>$${f.sale.toFixed(2)}</span></div><div class="flex justify-between text-[11px] text-gray-500"><span>ថ្លៃដឹក:</span><span>$${f.shipIn.toFixed(2)}</span></div><div class="flex justify-between text-base font-bold text-teal-700 mt-2 pt-2 border-t border-teal-100 bg-teal-50 p-2 rounded"><span>សរុបរួម:</span><span>$${f.income.toFixed(2)}</span></div></div></div>${type === 'admin' ? `<div class="mt-4 pt-2 border-t-2 border-red-100 bg-red-50 p-2 rounded border-dashed"><h4 class="text-center text-[9px] font-bold text-red-400 uppercase tracking-widest mb-1">INTERNAL USE ONLY</h4><div class="grid grid-cols-2 gap-1 text-[9px] text-gray-600"><div>ថ្លៃដើម: <b>$${f.cogs.toFixed(2)}</b></div><div>ថ្លៃដឹកចេញ: <b>$${f.shipExp.toFixed(2)}</b></div><div>Ads: <b>$${f.boost.toFixed(2)}</b></div><div>សរុប: <b class="text-red-500">$${f.expense.toFixed(2)}</b></div></div><div class="mt-2 text-center border-t border-red-200 pt-1"><span class="text-[9px] font-bold text-gray-500">ប្រាក់ចំណេញ</span><div class="text-sm font-bold ${f.profit>=0?'text-green-600':'text-red-600'}">$${f.profit.toFixed(2)}</div></div></div>` : `<div class="text-center mt-auto pt-6 border-t border-gray-100"><p class="text-[10px] text-teal-600 font-bold mb-1">Thank you for your business!</p><p class="text-[10px] text-gray-400 font-serif-kh">អរគុណដែលបានគាំទ្រអាជីវកម្មពួកយើង!</p></div>`}</div>`;
-                viewer.innerHTML = html; document.getElementById('invoice-modal').classList.remove('hidden');
+                const signatureSection = type === 'admin' ? '' : `
+                    <div class="flex justify-between items-end mt-14 px-4">
+                        <div class="text-center">
+                            <div class="border-b border-gray-300 w-24 mb-2"></div>
+                            <span class="text-[9px] font-bold text-gray-600">អ្នកទទួល</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="border-b border-gray-300 w-24 mb-2"></div>
+                            <span class="text-[9px] font-bold text-gray-600">អ្នកលក់</span>
+                        </div>
+                    </div>`;
+
+                let html = `
+                <div id="invoice-capture" class="bg-white p-6 relative overflow-hidden" style="font-family: 'Battambang', sans-serif;">
+                    
+                    <div class="absolute top-0 left-0 w-full h-1.5 bg-teal-600"></div>
+                    <div class="text-center mb-6 border-b border-teal-500 pb-3">
+                        <h2 class="text-xl font-bold text-teal-700">វិក្កយបត្រ</h2>
+                        <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">INVOICE #${o.id.toString().slice(-6)}</p>
+                        <p class="text-[9px] text-gray-400 mt-0.5">${new Date().toLocaleString('km-KH')}</p>
+                    </div>
+
+                    <div class="flex justify-between text-[10px] mb-6 gap-2">
+                        <div class="text-left flex-1 pr-2">
+                            <span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">Bill To:</span>
+                            <span class="font-bold text-gray-800 text-[10px] block mb-0.5 line-clamp-1">${o.custName}</span>
+                            <div class="text-gray-500 leading-tight text-[9px]">${o.custPhone}</div>
+                            <div class="text-gray-500 leading-tight mt-0.5 break-words text-[9px]">${o.custAddr || '-'}</div>
+                        </div>
+                        <div class="text-right w-auto pl-2 whitespace-nowrap">
+                            <span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">From:</span>
+                            <span class="font-bold text-gray-800 text-[10px] block mb-0.5">Bosba Ladies Dress</span>
+                            <div class="text-gray-500 leading-tight text-[9px]">Phnom Penh, Cambodia</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between bg-teal-50 p-1.5 rounded-t border-b border-teal-100">
+                            <span class="text-[9px] font-bold text-teal-700 uppercase">បរិយាយ (Description)</span>
+                            <span class="text-[9px] font-bold text-teal-700 uppercase">តម្លៃ (Price)</span>
+                        </div>
+                        <div class="flex justify-between items-start p-2 border-b border-gray-100">
+                            <div>
+                                <div class="text-[10px] font-bold text-gray-800">${o.prodName}</div>
+                                <div class="text-[9px] text-gray-500 mt-0.5">Size: ${o.prodSize || '-'} | Qty: ${o.prodQty}</div>
+                            </div>
+                            <div class="text-[10px] font-bold text-gray-800">$${f.sale.toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mb-4">
+                        <div class="w-1/2 space-y-1 text-right">
+                            <div class="flex justify-between text-[9px] text-gray-600 px-1">
+                                <span>សរុបរង:</span>
+                                <span class="font-medium">$${f.sale.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between text-[9px] text-gray-600 px-1">
+                                <span>ថ្លៃដឹក:</span>
+                                <span class="font-medium">$${f.shipIn.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px] font-bold text-teal-800 mt-1 pt-1 border-t border-teal-100 bg-teal-50 px-2 py-1 rounded">
+                                <span>សរុបរួម:</span>
+                                <span>$${f.income.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${type === 'admin' ? `
+                        <div class="mt-4 pt-2 border-t border-red-100 bg-red-50 p-2 rounded border-dashed">
+                            <h4 class="text-center text-[8px] font-bold text-red-400 uppercase tracking-widest mb-1">INTERNAL USE ONLY</h4>
+                            <div class="grid grid-cols-2 gap-1 text-[9px] text-gray-600">
+                                <div>ថ្លៃដើម: <b>$${f.cogs.toFixed(2)}</b></div>
+                                <div>ដឹកចេញ: <b>$${f.shipExp.toFixed(2)}</b></div>
+                                <div>Ads: <b>$${f.boost.toFixed(2)}</b></div>
+                                <div>ចំណាយសរុប: <b class="text-red-500">$${f.expense.toFixed(2)}</b></div>
+                            </div>
+                            <div class="mt-1 text-center border-t border-red-200 pt-1">
+                                <span class="text-[9px] font-bold text-gray-500">ប្រាក់ចំណេញ</span>
+                                <div class="text-xs font-bold ${f.profit>=0?'text-green-600':'text-red-600'}">$${f.profit.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    ` : `
+                        ${signatureSection}
+                        <div class="text-center mt-10 pt-4 border-t border-gray-100">
+                            <p class="text-[9px] text-gray-500 font-serif-kh">អរគុណដែលបានគាំទ្រអាជីវកម្មពួកយើង!</p>
+                        </div>
+                    `}
+                </div>`;
+                
+                viewer.innerHTML = html; 
+                document.getElementById('invoice-modal').classList.remove('hidden');
             },
             saveInvoiceAsImage: () => { 
                 const element = document.getElementById('invoice-capture'); 
-                html2canvas(element, { 
-                    scale: 3, 
-                    useCORS: true, 
-                    allowTaint: true, 
-                    backgroundColor: "#ffffff", 
-                    onclone: (clonedDoc) => { 
-                        const el = clonedDoc.getElementById('invoice-capture');
-                        el.style.fontFamily = "'Battambang', sans-serif";
-                        el.style.letterSpacing = 'normal'; 
-                    } 
-                }).then(canvas => { 
-                    const link = document.createElement('a'); 
-                    link.download = `Invoice_${new Date().toISOString().slice(0,10)}.png`; 
-                    link.href = canvas.toDataURL("image/png", 1.0); 
-                    link.click(); 
-                    ui.showToast("✅ រក្សាទុកជារូបភាព!"); 
-                }); 
+                html2canvas(element, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", onclone: (clonedDoc) => { const el = clonedDoc.getElementById('invoice-capture'); el.style.fontFamily = "'Battambang', sans-serif"; el.style.letterSpacing = 'normal'; } }).then(canvas => { const link = document.createElement('a'); link.download = `Invoice_${new Date().toISOString().slice(0,10)}.png`; link.href = canvas.toDataURL("image/png", 1.0); link.click(); ui.showToast("✅ រក្សាទុកជារូបភាព!"); }); 
             },
             shareTextOrder: async () => { const cName = document.getElementById('cust-name').value; const cPhone = document.getElementById('cust-phone').value; const cAddr = document.getElementById('cust-addr').value; const pName = document.getElementById('prod-name').value; const pSize = document.getElementById('prod-size').value; const pQty = document.getElementById('prod-qty').value; const vSale = parseFloat(document.getElementById('val-sale').value) || 0; const vShip = parseFloat(document.getElementById('val-ship-in').value) || 0; const total = vSale + vShip; const text = `📦 វិក្កយបត្រ / ORDER DETAIL\n------------------------\n👤 អតិថិជន: ${cName}\n📞 ទូរស័ព្ទ: ${cPhone}\n📍 ទីតាំង: ${cAddr}\n------------------------\n🛍️ ទំនិញ: ${pName} ${pSize ? '('+pSize+')' : ''}\n🔢 ចំនួន: ${pQty}\n------------------------\n💰 តម្លៃទំនិញ: $${vSale.toFixed(2)}\n🚚 ថ្លៃដឹក: $${vShip.toFixed(2)}\n💵 សរុប: $${total.toFixed(2)}\n------------------------\nអរគុណ! Thank you! 🙏`; if (navigator.share) { try { await navigator.share({ title: 'Order Details', text: text }); } catch(e) {} } else { navigator.clipboard.writeText(text); ui.showToast("📋 បានចម្លងអក្សរវិក្កយបត្រ!"); } },
             
             dataManager: {
                 downloadBackup: () => {
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(app.data));
-                    const dlAnchorElem = document.createElement('a');
-                    dlAnchorElem.setAttribute("href", dataStr);
-                    dlAnchorElem.setAttribute("download", `shop_backup_${new Date().toISOString().slice(0,10)}.json`);
-                    document.body.appendChild(dlAnchorElem);
-                    dlAnchorElem.click();
-                    dlAnchorElem.remove();
-                    ui.showToast("✅ បាន Download ឯកសារ Backup!");
+                    const dlAnchorElem = document.createElement('a'); dlAnchorElem.setAttribute("href", dataStr); dlAnchorElem.setAttribute("download", `shop_backup_${new Date().toISOString().slice(0,10)}.json`); document.body.appendChild(dlAnchorElem); dlAnchorElem.click(); dlAnchorElem.remove(); ui.showToast("✅ បាន Download ឯកសារ Backup!");
                 },
-
-                prepareImport: (input) => {
-                    const file = input.files[0];
-                    if (!file) return;
-
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const content = e.target.result;
-                            let importedData = [];
-                            if (file.name.toLowerCase().endsWith('.json')) importedData = JSON.parse(content);
-                            else if (file.name.toLowerCase().endsWith('.csv')) importedData = dataManager.parseCSV(content);
-                            else throw new Error("Format not supported");
-
-                            if (!Array.isArray(importedData) || importedData.length === 0) throw new Error("No data found");
-
-                            ui.showImportConfirm(importedData.length, importedData);
-                            input.value = '';
-                        } catch (err) { alert("Error: " + err.message); }
-                    };
-                    reader.readAsText(file);
-                },
-
-                executeImport: async (data) => {
-                    document.getElementById('modal-import-overlay').classList.add('hidden');
-                    const loader = document.getElementById('app-loader');
-                    loader.style.display = 'flex';
-                    document.getElementById('loader-text').innerText = "កំពុងបញ្ចូលទិន្ន័យ...";
-
-                    try {
-                        const tx = dbConn.transaction(DB_CONFIG.store, 'readwrite');
-                        const store = tx.objectStore(DB_CONFIG.store);
-                        data.forEach(item => store.put(item));
-
-                        tx.oncomplete = async () => {
-                            await app.refresh();
-                            loader.style.display = 'none';
-                            ui.showToast(`✅ បញ្ចូល ${data.length} ទិន្ន័យជោគជ័យ!`);
-                        };
-                        
-                        tx.onerror = (e) => { throw new Error(e.target.error); };
-                    } catch (err) {
-                        loader.style.display = 'none';
-                        alert("Import Failed: " + err);
-                    }
-                },
-
-                parseCSV: (text) => {
-                    const lines = text.split('\n').filter(l => l.trim() !== '');
-                    const data = [];
-                    for (let i = 1; i < lines.length; i++) {
-                        const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                        if (!values) continue;
-                        const cleanVal = (val) => val ? val.replace(/^"|"$/g, '').replace(/""/g, '"').trim() : '';
-                        
-                        let parsedDate = new Date().toISOString(); 
-                        if (values[15]) {
-                             const rawD = cleanVal(values[15]);
-                             if(rawD && rawD.length > 5) parsedDate = rawD;
-                        } else if (values[0]) {
-                            const dateStr = cleanVal(values[0]);
-                            const d = new Date(dateStr);
-                            if (!isNaN(d.getTime())) {
-                                parsedDate = d.toISOString();
-                            }
-                        }
-
-                        const row = {
-                            id: Date.now() + Math.random(),
-                            updatedAt: parsedDate, 
-                            custName: cleanVal(values[1]),
-                            custPhone: cleanVal(values[2]),
-                            custAddr: cleanVal(values[3]),
-                            prodName: cleanVal(values[4]),
-                            prodSize: cleanVal(values[5]),
-                            prodQty: cleanVal(values[6]) || 1,
-                            costBuy: values[12] ? cleanVal(values[12]) : (cleanVal(values[7]) || 0),
-                            valSale: values[13] ? cleanVal(values[13]) : (cleanVal(values[8]) || 0),
-                            valShipIn: values[14] ? cleanVal(values[14]) : 0,
-                            costShip: 0, costBoost: 0,
-                            status: cleanVal(values[10]) || 'pending',
-                            note: cleanVal(values[11]) || '',
-                            isDeleted: false
-                        };
-                        data.push(row);
-                    }
-                    return data;
-                },
-
-                exportCSV: () => {
-                    const items = app.data;
-                    let csvContent = "\uFEFFDate,Customer,Phone,Address,Product,Size,Qty,Cost (Total),Income (Total),Profit,Status,Note,RawCost,RawSale,RawShipIn,RawDate\n";
-                    items.forEach(o => {
-                        const f = app.calc(o);
-                        const q = (s) => `"${(s||'').toString().replace(/"/g, '""')}"`;
-                        const row = [
-                            new Date(o.updatedAt).toLocaleDateString(), 
-                            q(o.custName), q(o.custPhone), q(o.custAddr), q(o.prodName),
-                            o.prodSize, o.prodQty,
-                            f.expense.toFixed(2), f.income.toFixed(2), f.profit.toFixed(2),
-                            o.status,
-                            q(o.note),
-                            o.costBuy || 0, o.valSale || 0, o.valShipIn || 0,
-                            o.updatedAt
-                        ].join(",");
-                        csvContent += row + "\n";
-                    });
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement("a");
-                    const url = URL.createObjectURL(blob);
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", `Shop_Report_${new Date().toISOString().slice(0,10)}.csv`);
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                },
-
-                resetApp: async () => {
-                    if (confirm("⚠️ តើអ្នកពិតជាចង់លុបចោលទិន្ន័យទាំងអស់មែនទេ? (មិនអាចយកវិញបានទេ)")) {
-                        await db.clear(); await db.clear('logs'); localStorage.clear(); location.reload();
-                    }
-                }
+                prepareImport: (input) => { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { const content = e.target.result; let importedData = []; if (file.name.toLowerCase().endsWith('.json')) importedData = JSON.parse(content); else if (file.name.toLowerCase().endsWith('.csv')) importedData = dataManager.parseCSV(content); else throw new Error("Format not supported"); if (!Array.isArray(importedData) || importedData.length === 0) throw new Error("No data found"); ui.showImportConfirm(importedData.length, importedData); input.value = ''; } catch (err) { alert("Error: " + err.message); } }; reader.readAsText(file); },
+                executeImport: async (data) => { document.getElementById('modal-import-overlay').classList.add('hidden'); const loader = document.getElementById('app-loader'); loader.style.display = 'flex'; document.getElementById('loader-text').innerText = "កំពុងបញ្ចូលទិន្ន័យ..."; try { const tx = dbConn.transaction(DB_CONFIG.store, 'readwrite'); const store = tx.objectStore(DB_CONFIG.store); data.forEach(item => store.put(item)); tx.oncomplete = async () => { await app.refresh(); loader.style.display = 'none'; ui.showToast(`✅ បញ្ចូល ${data.length} ទិន្ន័យជោគជ័យ!`); }; tx.onerror = (e) => { throw new Error(e.target.error); }; } catch (err) { loader.style.display = 'none'; alert("Import Failed: " + err); } },
+                parseCSV: (text) => { const lines = text.split('\n').filter(l => l.trim() !== ''); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g); if (!values) continue; const cleanVal = (val) => val ? val.replace(/^"|"$/g, '').replace(/""/g, '"').trim() : ''; let parsedDate = new Date().toISOString(); if (values[15]) { const rawD = cleanVal(values[15]); if(rawD && rawD.length > 5) parsedDate = rawD; } else if (values[0]) { const dateStr = cleanVal(values[0]); const d = new Date(dateStr); if (!isNaN(d.getTime())) { parsedDate = d.toISOString(); } } const row = { id: Date.now() + Math.random(), updatedAt: parsedDate, custName: cleanVal(values[1]), custPhone: cleanVal(values[2]), custAddr: cleanVal(values[3]), prodName: cleanVal(values[4]), prodSize: cleanVal(values[5]), prodQty: cleanVal(values[6]) || 1, costBuy: values[12] ? cleanVal(values[12]) : (cleanVal(values[7]) || 0), valSale: values[13] ? cleanVal(values[13]) : (cleanVal(values[8]) || 0), valShipIn: values[14] ? cleanVal(values[14]) : 0, costShip: 0, costBoost: 0, status: cleanVal(values[10]) || 'pending', note: cleanVal(values[11]) || '', isDeleted: false }; data.push(row); } return data; },
+                exportCSV: () => { const items = app.data; if (items.length === 0) { ui.showToast("⚠️ គ្មានទិន្ន័យសម្រាប់ Export"); return; } let csvContent = "\uFEFFDate,Customer,Phone,Address,Product,Size,Qty,Total Cost,Total Income,Profit,Status,Note,RawDate\n"; const q = (s) => { if (s === null || s === undefined) return '""'; return `"${s.toString().replace(/"/g, '""')}"`; }; items.forEach(o => { const f = app.calc(o); let dateStr = ""; try { dateStr = new Date(o.updatedAt).toISOString().split('T')[0]; } catch (e) { dateStr = ""; } const row = [q(dateStr), q(o.custName), q(o.custPhone), q(o.custAddr), q(o.prodName), q(o.prodSize), q(o.prodQty), q(f.expense.toFixed(2)), q(f.income.toFixed(2)), q(f.profit.toFixed(2)), q(o.status), q(o.note), q(o.updatedAt)].join(","); csvContent += row + "\n"; }); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); const today = new Date().toISOString().slice(0,10); link.setAttribute("download", `Shop_Data_All_${today}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); },
+                resetApp: () => { ui.askConfirm('reset_app'); }, emptyTrash: () => ui.askConfirm('empty_trash')
             }
         };
         
-        ui.showImportConfirm = (count, data) => {
-            document.getElementById('import-msg-count').innerText = `បានរកឃើញ ${count} ទិន្ន័យ`;
-            const modal = document.getElementById('modal-import-overlay');
-            const btn = document.getElementById('btn-confirm-import');
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-            newBtn.onclick = () => dataManager.executeImport(data);
-            modal.classList.remove('hidden');
-        };
+        ui.showImportConfirm = (count, data) => { document.getElementById('import-msg-count').innerText = `បានរកឃើញ ${count} ទិន្ន័យ`; const modal = document.getElementById('modal-import-overlay'); const btn = document.getElementById('btn-confirm-import'); const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn); newBtn.onclick = () => dataManager.executeImport(data); modal.classList.remove('hidden'); };
 
         const dataManager = ui.dataManager;
+
+        function renderProfessionalHistory() {
+            const container = document.getElementById('history-list-container');
+            const countBadge = document.getElementById('hist-total-count');
+            const allData = app.data || []; const activeData = allData.filter(x => !x.isDeleted); const sorted = [...activeData].sort((a,b) => b.id - a.id);
+            if(countBadge) countBadge.innerText = `${sorted.length} ប្រតិបត្តិការ`;
+
+            if(sorted.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center mt-20 animate-fade-in">
+                        <div class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                            <i class="fas fa-history text-3xl text-gray-300 dark:text-gray-600"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-400 dark:text-gray-500">មិនទាន់មានទិន្នន័យ</h3>
+                        <p class="text-xs text-gray-400 mt-1">ទិន្នន័យរបស់អ្នកនឹងបង្ហាញនៅទីនេះ</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '<div class="timeline-wrapper"></div>'; 
+            const wrapper = container.querySelector('.timeline-wrapper');
+            let lastDateStr = '';
+
+            sorted.forEach((item, index) => {
+                const dateObj = new Date(item.id); const dateStr = dateObj.toLocaleDateString('km-KH'); const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                
+                if (dateStr !== lastDateStr) {
+                    const today = new Date().toLocaleDateString('km-KH');
+                    let displayLabel = dateStr === today ? "ថ្ងៃនេះ (Today)" : dateStr;
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'sticky top-0 z-10 py-4 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-sm -ml-6 pl-6 mb-2 border-b border-dashed border-gray-200 dark:border-gray-800';
+                    headerDiv.innerHTML = `<span class="text-xs font-bold text-teal-700 dark:text-teal-400 uppercase tracking-widest"><i class="far fa-calendar-alt mr-1"></i> ${displayLabel}</span>`;
+                    wrapper.appendChild(headerDiv);
+                    lastDateStr = dateStr;
+                }
+
+                const f = app.calc(item);
+                let amount = f.income;
+                let theme = { border: 'status-inc', dotColor: 'bg-emerald-500', moneyColor: 'text-emerald-600', sign: '+' };
+                if(item.status === 'pending') { theme = { border: 'status-pen', dotColor: 'bg-orange-500', moneyColor: 'text-orange-500', sign: '~' }; } 
+                else if (item.status === 'cancelled') { theme = { border: 'status-exp', dotColor: 'bg-gray-400', moneyColor: 'text-gray-400 decoration-line-through', sign: '' }; amount = 0; }
+                const delay = index * 0.05; 
+                const cardHtml = `<div class="history-card-modern ${theme.border}" style="animation-delay: ${delay}s" onclick="ui.openOrderModal(${item.id})"><div class="history-dot ${theme.dotColor}"></div><div class="flex justify-between items-start"><div><h4 class="font-bold text-gray-800 dark:text-gray-100 text-sm mb-0.5">${item.prodName}</h4><div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"><span class="bg-gray-100 dark:bg-gray-700 px-1.5 rounded text-[10px] font-mono">${timeStr}</span><span>• ${item.custName}</span></div></div><div class="text-right"><div class="font-bold ${theme.moneyColor} text-base">${theme.sign}$${amount.toFixed(2)}</div><div class="text-[9px] uppercase font-bold opacity-60 mt-1">${item.status}</div></div></div></div>`;
+                wrapper.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
         window.onload = app.init;
     </script>
+<div id="modal-drilldown" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-end sm:items-center justify-center backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 w-full sm:w-[500px] h-[85vh] sm:h-auto rounded-t-3xl sm:rounded-3xl p-0 overflow-hidden shadow-2xl animate-slide-up flex flex-col">
+            <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 z-10">
+                <div><h3 class="text-lg font-bold text-gray-800 dark:text-white font-serif-kh" id="drill-title">Title</h3><p class="text-xs text-gray-500" id="drill-subtitle">...</p></div>
+                <button onclick="document.getElementById('modal-drilldown').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 hover:text-red-500 transition"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="drill-content" class="p-5 overflow-y-auto flex-1"></div>
+            <div id="drill-footer" class="p-4 border-t border-gray-100 dark:border-gray-700 hidden">
+                <button onclick="ui.generatePDFStatement()" class="w-full py-3 bg-teal-600 text-white rounded-xl font-bold shadow hover:bg-teal-700 transition"><i class="fas fa-print mr-2"></i> បោះពុម្ពបញ្ជីនេះ (Print)</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
