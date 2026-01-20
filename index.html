@@ -1649,6 +1649,35 @@
                 const element = document.getElementById('invoice-capture'); 
                 html2canvas(element, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", onclone: (clonedDoc) => { const el = clonedDoc.getElementById('invoice-capture'); el.style.fontFamily = "'Battambang', sans-serif"; el.style.letterSpacing = 'normal'; } }).then(canvas => { const link = document.createElement('a'); link.download = `Invoice_${new Date().toISOString().slice(0,10)}.png`; link.href = canvas.toDataURL("image/png", 1.0); link.click(); ui.showToast("✅ រក្សាទុកជារូបភាព!"); }); 
             },
+            // === បន្ថែមថ្មីសម្រាប់ Print Invoice A4 ស្អាត (FIXED) ===
+            printInvoice: () => {
+                const content = document.getElementById('invoice-viewer').innerHTML;
+                const printArea = document.getElementById('print-area');
+                
+                // យកតែខ្លឹមសារ Invoice មកដាក់ក្នុងក្រដាស Print
+                // យើងបន្ថែម CSS ឱ្យវាពង្រីកពេញក្រដាស A4 (width: 100%)
+                printArea.innerHTML = `
+                    <div style="font-family: 'Battambang', sans-serif; padding: 20px; width: 100%;">
+                        ${content}
+                    </div>
+                `;
+                
+                // ជំហានទី ១: បង្ហាញ Print Area
+                printArea.classList.remove('hidden'); 
+                document.body.classList.add('printing-statement'); 
+
+                // ជំហានទី ២: Force Reflow (ឱ្យ Browser គូររូបរាងថ្មីភ្លាមៗ)
+                const _ = printArea.offsetHeight; 
+
+                // ជំហានទី ៣: ហៅ Print
+                window.print();
+
+                // ជំហានទី ៤: លាក់វិញបន្ទាប់ពី Print ចប់
+                setTimeout(() => {
+                    document.body.classList.remove('printing-statement');
+                    printArea.classList.add('hidden'); 
+                }, 1000);
+            },
             shareTextOrder: async () => { const cName = document.getElementById('cust-name').value; const cPhone = document.getElementById('cust-phone').value; const cAddr = document.getElementById('cust-addr').value; const pName = document.getElementById('prod-name').value; const pSize = document.getElementById('prod-size').value; const pQty = document.getElementById('prod-qty').value; const vSale = parseFloat(document.getElementById('val-sale').value) || 0; const vShip = parseFloat(document.getElementById('val-ship-in').value) || 0; const total = vSale + vShip; const text = `📦 វិក្កយបត្រ / ORDER DETAIL\n------------------------\n👤 អតិថិជន: ${cName}\n📞 ទូរស័ព្ទ: ${cPhone}\n📍 ទីតាំង: ${cAddr}\n------------------------\n🛍️ ទំនិញ: ${pName} ${pSize ? '('+pSize+')' : ''}\n🔢 ចំនួន: ${pQty}\n------------------------\n💰 តម្លៃទំនិញ: $${vSale.toFixed(2)}\n🚚 ថ្លៃដឹក: $${vShip.toFixed(2)}\n💵 សរុប: $${total.toFixed(2)}\n------------------------\nអរគុណ! Thank you! 🙏`; if (navigator.share) { try { await navigator.share({ title: 'Order Details', text: text }); } catch(e) {} } else { navigator.clipboard.writeText(text); ui.showToast("📋 បានចម្លងអក្សរវិក្កយបត្រ!"); } },
             
             dataManager: {
