@@ -1552,6 +1552,7 @@
             restore: (id) => ui.askConfirm('restore', id),
             
             // === ជំនួសដោយកូដ Invoice ថ្មីដែលស្អាតជាងមុន (NEW CLEAN DESIGN) ===
+            // === វិក្កយបត្រស្តង់ដារ (FIXED TABLE LAYOUT) ===
             openInvoice: (type) => {
                 history.pushState({modal: true}, null, ''); 
                 const id = parseInt(document.getElementById('entry-id').value);
@@ -1560,84 +1561,88 @@
                 const viewer = document.getElementById('invoice-viewer');
                 
                 const genDateShort = new Date().toLocaleDateString('km-KH');
-                const genTime = new Date().toLocaleTimeString('km-KH', {hour: '2-digit', minute:'2-digit'});
 
-                // ការរចនាថ្មី៖ ប្រើប្រអប់ដែលមានទទឹងថេរ (Fixed Width Card) ដើម្បីងាយស្រួល Capture
+                // យើងប្រើរចនាសម្ព័ន្ធ Table 100% ដើម្បីធានាថាទីតាំងមិនរត់ពេល Save
                 let html = `
-                <div id="invoice-capture" style="width: 380px; font-family: 'Battambang', sans-serif;" class="bg-white shadow-sm mx-auto">
-                    <div class="h-3 w-full bg-gradient-to-r from-teal-600 to-teal-500"></div>
+                <div id="invoice-capture" style="width: 500px; min-height: 600px; background: white; padding: 30px; margin: 0 auto; font-family: 'Battambang', sans-serif; position: relative;">
                     
-                    <div class="p-6 pt-4">
-                        <div class="text-center mb-6">
-                            <h2 class="text-2xl font-bold text-teal-700 font-serif-kh mb-1">វិក្កយបត្រ</h2>
-                            <div class="flex justify-center items-center gap-2 text-[10px] text-gray-500 uppercase tracking-wider">
-                                <span class="bg-teal-50 text-teal-700 px-2 py-0.5 rounded font-bold">#${o.id.toString().slice(-6)}</span>
-                                <span>•</span>
-                                <span>${genDateShort} ${genTime}</span>
-                            </div>
-                        </div>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr>
+                            <td style="vertical-align: top;">
+                                <h1 style="margin: 0; color: #0f766e; font-size: 24px; font-weight: bold; text-transform: uppercase;">MY SHOP</h1>
+                                <p style="margin: 5px 0 0; color: #64748b; font-size: 11px;">Phnom Penh, Cambodia</p>
+                                <p style="margin: 0; color: #64748b; font-size: 11px;">Tel: 012 345 678</p>
+                            </td>
+                            <td style="text-align: right; vertical-align: top;">
+                                <div style="font-size: 28px; font-weight: bold; color: #e2e8f0; letter-spacing: 2px;">INVOICE</div>
+                                <div style="color: #0f766e; font-weight: bold; font-size: 14px;">#${o.id.toString().slice(-6)}</div>
+                                <div style="color: #64748b; font-size: 11px; margin-top: 5px;">Date: ${genDateShort}</div>
+                            </td>
+                        </tr>
+                    </table>
 
-                        <div class="flex justify-between mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100 text-[11px]">
-                            <div class="flex-1">
-                                <span class="text-teal-600 font-bold block text-[9px] uppercase mb-1"><i class="fas fa-user-tag mr-1"></i> អតិថិជន (Customer):</span>
-                                <span class="font-bold text-gray-800 text-sm block mb-0.5">${o.custName}</span>
-                                <div class="text-gray-500 leading-tight">${o.custPhone}</div>
-                                <div class="text-gray-500 leading-tight truncate max-w-[150px]">${o.custAddr}</div>
-                            </div>
-                            <div class="text-right flex-1 pl-4 border-l border-gray-200/50">
-                                <span class="text-teal-600 font-bold block text-[9px] uppercase mb-1">ចេញដោយ (From):</span>
-                                <span class="font-bold text-gray-800 text-sm block mb-0.5">MY SHOP</span>
-                                <div class="text-gray-500 leading-tight">Phnom Penh</div>
-                                <div class="text-gray-500 leading-tight">Cambodia</div>
-                            </div>
-                        </div>
+                    <div style="width: 100%; height: 2px; background-color: #0f766e; margin-bottom: 20px;"></div>
 
-                        <div class="mb-2">
-                            <div class="flex justify-between bg-teal-600 text-white p-2 py-2.5 rounded-t-lg text-[10px] font-bold uppercase tracking-wider">
-                                <span>បរិយាយ (Description)</span>
-                                <span>តម្លៃ (Amount)</span>
-                            </div>
-                            <div class="bg-white border-x border-b border-gray-100 p-3 rounded-b-lg space-y-3">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <div class="text-sm font-bold text-gray-800">${o.prodName}</div>
-                                        <div class="text-[10px] text-gray-500 mt-0.5 flex gap-2">
-                                            ${o.prodSize ? `<span class="bg-gray-100 px-1.5 rounded">Size: ${o.prodSize}</span>` : ''}
-                                            <span class="bg-gray-100 px-1.5 rounded">Qty: ${o.prodQty}</span>
-                                        </div>
-                                    </div>
-                                    <div class="text-sm font-bold text-gray-800">$${f.sale.toFixed(2)}</div>
-                                </div>
-                                
-                                ${f.shipIn > 0 ? `
-                                <div class="flex justify-between items-center pt-2 border-t border-dashed border-gray-100">
-                                    <div class="text-xs text-gray-600"><i class="fas fa-truck-fast mr-1 text-gray-400"></i> ថ្លៃដឹកជញ្ជូន (Shipping)</div>
-                                    <div class="text-xs font-bold text-gray-800">$${f.shipIn.toFixed(2)}</div>
-                                </div>` : ''}
-                            </div>
-                        </div>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+                        <tr>
+                            <td style="width: 100%;">
+                                <div style="font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;">អតិថិជន / BILL TO:</div>
+                                <div style="font-size: 16px; font-weight: bold; color: #334155; margin-bottom: 2px;">${o.custName}</div>
+                                <div style="font-size: 12px; color: #475569;">${o.custPhone}</div>
+                                <div style="font-size: 12px; color: #475569;">${o.custAddr || 'N/A'}</div>
+                            </td>
+                        </tr>
+                    </table>
 
-                        <div class="flex flex-col items-end mt-4">
-                            <div class="w-full bg-teal-50 p-3 rounded-xl border border-teal-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-bold text-teal-800 uppercase">សរុបរួម (Grand Total)</span>
-                                    <span class="text-xl font-bold text-teal-700">$${f.income.toFixed(2)}</span>
-                                  </div>
-                            </div>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9;">
+                                <th style="padding: 10px; text-align: left; font-size: 11px; color: #475569; border-bottom: 2px solid #e2e8f0;">បរិយាយ (DESCRIPTION)</th>
+                                <th style="padding: 10px; text-align: center; font-size: 11px; color: #475569; border-bottom: 2px solid #e2e8f0;">បរិមាណ (QTY)</th>
+                                <th style="padding: 10px; text-align: right; font-size: 11px; color: #475569; border-bottom: 2px solid #e2e8f0;">តម្លៃ (AMOUNT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9;">
+                                    <div style="font-weight: bold; font-size: 13px; color: #1e293b;">${o.prodName}</div>
+                                    ${o.prodSize ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">Size: ${o.prodSize}</div>` : ''}
+                                </td>
+                                <td style="padding: 12px 10px; text-align: center; font-weight: bold; font-size: 13px; color: #334155; border-bottom: 1px solid #f1f5f9;">${o.prodQty}</td>
+                                <td style="padding: 12px 10px; text-align: right; font-weight: bold; font-size: 13px; color: #334155; border-bottom: 1px solid #f1f5f9;">$${f.sale.toFixed(2)}</td>
+                            </tr>
+                            ${f.shipIn > 0 ? `
+                            <tr>
+                                <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 12px;">ថ្លៃដឹកជញ្ជូន (Shipping Fee)</td>
+                                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f1f5f9;">-</td>
+                                <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 12px; color: #334155; border-bottom: 1px solid #f1f5f9;">$${f.shipIn.toFixed(2)}</td>
+                            </tr>` : ''}
+                        </tbody>
+                    </table>
 
-                            ${type === 'admin' ? `
-                            <div class="w-full mt-3 pt-2 border-t-2 border-red-100 bg-red-50/50 p-2 rounded border-dashed text-[10px]">
-                                <div class="flex justify-between text-gray-500 mb-1"><span>ថ្លៃដើម + ដឹកចេញ + Ads:</span> <span>$${f.expense.toFixed(2)}</span></div>
-                                <div class="flex justify-between font-bold text-xs"><span>ប្រាក់ចំណេញ:</span> <span class="${f.profit>=0?'text-green-600':'text-red-600'}">$${f.profit.toFixed(2)}</span></div>
-                            </div>` : ''}
-                            
-                            <div class="text-center w-full mt-6">
-                                <p class="text-[10px] text-teal-600 font-bold font-serif-kh">សូមអរគុណ!</p>
-                                <p class="text-[9px] text-gray-400">Thank you for your business.</p>
-                            </div>
-                        </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 60%;"></td>
+                            <td style="width: 40%;">
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td style="padding: 5px 0; font-size: 12px; color: #64748b;">សរុប (Total):</td>
+                                        <td style="padding: 5px 0; text-align: right; font-weight: bold; font-size: 14px; color: #334155;">$${f.income.toFixed(2)}</td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #0f766e;">
+                                        <td style="padding: 10px 0; font-size: 14px; font-weight: bold; color: #0f766e;">សរុបរួម (Grand Total):</td>
+                                        <td style="padding: 10px 0; text-align: right; font-size: 18px; font-weight: bold; color: #0f766e;">$${f.income.toFixed(2)}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="position: absolute; bottom: 30px; left: 30px; right: 30px; text-align: center;">
+                        <p style="font-size: 12px; color: #334155; font-weight: bold; margin-bottom: 5px;">សូមអរគុណ! Thank You!</p>
+                        <p style="font-size: 10px; color: #94a3b8;">ទំនិញទិញហើយមិនអាចដូរវិញបានទេ។</p>
                     </div>
-                    <div class="h-1.5 w-full bg-gray-100"></div>
+
                 </div>`;
                 
                 viewer.innerHTML = html;
@@ -1647,33 +1652,30 @@
                 const element = document.getElementById('invoice-capture');
                 if(!element) return;
 
-                // បង្ហាញ Toast ថា "កំពុងដំណើរការ"
                 ui.showToast("⏳ កំពុងបង្កើតរូបភាព...");
 
-                // ប្រើការកំណត់ពិសេសសម្រាប់ html2canvas
                 html2canvas(element, { 
-                    scale: 3, // គុណភាពច្បាស់ (High Resolution)
+                    scale: 2, // គុណភាពរូបភាព (2 គឺច្បាស់ល្មម, 3 អាចធ្ងន់ពេក)
                     useCORS: true, 
                     allowTaint: true, 
                     backgroundColor: "#ffffff",
-                    // កំណត់ទទឹងឱ្យថេរពេលចាប់រូបភាព ដើម្បីកុំឱ្យវាបង្រួម
-                    width: 380,
-                    windowWidth: 400,
-                    onclone: (clonedDoc) => { 
+                    // សំខាន់៖ កុំកំណត់ windowWidth ឲ្យតូចតាមទូរស័ព្ទ
+                    // យើងទុកឱ្យវាចាប់យកទំហំ Table 500px ពេញ
+                    onclone: (clonedDoc) => {
                         const el = clonedDoc.getElementById('invoice-capture');
-                        // ធានាថា Font ត្រូវបានប្រើត្រឹមត្រូវ
-                        el.style.fontFamily = "'Battambang', sans-serif";
-                        // ធានាថាវានៅកណ្តាលពេល Capture
-                        el.style.margin = '0 auto';
-                    } 
+                        // ធានាថាមិនមាន margin រញ៉េរញ៉ៃពេល Capture
+                        el.style.margin = '0';
+                        el.style.transform = 'none';
+                    }
                 }).then(canvas => { 
                     const link = document.createElement('a'); 
-                    link.download = `Invoice_${new Date().toISOString().slice(0,10)}_${Date.now().toString().slice(-4)}.png`; 
-                    link.href = canvas.toDataURL("image/png", 1.0); 
+                    link.download = `Invoice_${new Date().toISOString().slice(0,10)}_${Date.now().toString().slice(-4)}.jpg`; // ប្រើ .jpg វិញស្រាលជាង
+                    link.href = canvas.toDataURL("image/jpeg", 0.9); 
                     link.click(); 
-                    ui.showToast("✅ រក្សាទុកជារូបភាពជោគជ័យ!"); 
+                    ui.showToast("✅ រក្សាទុកជោគជ័យ!"); 
                 }).catch(err => {
-                    ui.showToast("❌ បរាជ័យ: " + err);
+                    alert("Error saving image: " + err);
+                    ui.showToast("❌ បរាជ័យក្នុងការ Save");
                 }); 
             },
             // === បន្ថែមថ្មីសម្រាប់ Print Invoice A4 ស្អាត (FIXED) ===
