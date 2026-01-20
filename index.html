@@ -268,72 +268,40 @@
 /* === PROFESSIONAL BANK STATEMENT PRINT STYLE === */
 /* === FIX: REMOVE BROWSER HEADER/FOOTER & EXTRA PAGE === */
 /* === PREMIUM PROFESSIONAL STATEMENT DESIGN === */
-    @media print {
-        @page { size: A4; margin: 0; }
-        
-        html, body {
-            width: 100%; height: auto !important; margin: 0 !important; padding: 0 !important;
-            background-color: white !important; visibility: hidden !important;
-            -webkit-print-color-adjust: exact !important; /* បង្ខំឱ្យ Print ចេញពណ៌ Background */
-            print-color-adjust: exact !important;
+    /* === FIXED PRINT STYLES (ដោះស្រាយបញ្ហា Print តូច និងចេញច្រើនទំព័រ) === */
+        @media print {
+            @page { 
+                size: A4; 
+                margin: 0; /* លុប margin របស់ browser ចោល */
+            }
+            body, html { 
+                width: 100%; 
+                height: 100%; 
+                margin: 0; 
+                padding: 0; 
+                background: white;
+            }
+            /* លាក់អ្វីៗគ្រប់យ៉ាង */
+            body > * { display: none !important; }
+            /* បង្ហាញតែ Print Area */
+            #print-area { 
+                display: block !important; 
+                width: 100% !important; 
+                height: auto !important;
+                position: absolute; 
+                top: 0; 
+                left: 0; 
+                z-index: 9999;
+                background: white;
+            }
+            /* កំណត់ទម្រង់ក្រដាសពេល Print ឱ្យពេញ A4 */
+            .print-page-content {
+                width: 210mm; /* ទទឹង A4 */
+                padding: 10mm; /* គម្លាតសងខាង */
+                margin: 0 auto;
+                font-size: 12pt;
+            }
         }
-
-        body * { visibility: hidden !important; }
-
-        /* --- STATEMENT CONTAINER --- */
-        body.printing-statement #print-area, 
-        body.printing-statement #print-area * { visibility: visible !important; }
-        
-        body.printing-statement #print-area {
-            position: absolute !important; left: 0 !important; top: 0 !important;
-            width: 100% !important; min-height: 100vh !important;
-            padding: 12mm 15mm !important; /* Margin ស្អាតជុំវិញក្រដាស */
-            z-index: 999999 !important;
-            background-color: white !important;
-            display: block !important;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Font ទំនើប */
-            color: #334155; /* ពណ៌អក្សរប្រផេះចាស់ (មើលទៅថ្លៃជាងខ្មៅសុទ្ធ) */
-        }
-
-        /* --- TABLE STYLING --- */
-        body.printing-statement table { 
-            width: 100% !important; border-collapse: collapse !important; margin-top: 25px !important;
-            font-size: 11px !important;
-        }
-        body.printing-statement thead th {
-            background-color: #f1f5f9 !important; /* ពណ៌ក្បាលតារាង */
-            color: #475569 !important;
-            text-transform: uppercase !important;
-            letter-spacing: 1px !important;
-            padding: 10px 8px !important;
-            border-bottom: 2px solid #e2e8f0 !important;
-            font-weight: 700 !important;
-        }
-        body.printing-statement tbody td {
-            padding: 12px 8px !important;
-            border-bottom: 1px solid #f1f5f9 !important;
-            vertical-align: top !important;
-        }
-        body.printing-statement tbody tr:last-child td { border-bottom: none !important; }
-        
-        /* Zebra Striping (ជួរឆ្លាស់ពណ៌ស្រាលៗ) */
-        body.printing-statement tbody tr:nth-child(even) { background-color: #fafafa !important; }
-
-        /* --- UTILITIES --- */
-        .print-text-teal { color: #0d9488 !important; }
-        .print-text-red { color: #ef4444 !important; }
-        .print-bg-teal-light { background-color: #f0fdfa !important; }
-        .print-border-top { border-top: 1px solid #e2e8f0 !important; }
-        
-        /* --- INVOICE SECTION (រក្សាទុក) --- */
-        body.printing-invoice #invoice-modal {
-            visibility: visible !important; position: absolute !important; left: 0 !important; top: 0 !important;
-            width: 100% !important; display: flex !important; justify-content: center !important; padding-top: 20mm !important;
-        }
-        body.printing-invoice #invoice-modal * { visibility: visible !important; }
-        body.printing-invoice #invoice-modal > div { border: 1px solid #eee !important; width: 100% !important; max-width: 80mm !important; }
-        body.printing-invoice #invoice-actions { display: none !important; }
-    }
 </style>
 </head>
 <body>
@@ -1553,6 +1521,7 @@
             
             // === ជំនួសដោយកូដ Invoice ថ្មីដែលស្អាតជាងមុន (NEW CLEAN DESIGN) ===
             // === វិក្កយបត្រស្តង់ដារ (FIXED TABLE LAYOUT) ===
+           // === វិក្កយបត្រដែលបានកែសម្រួល (CORRECTED LAYOUT) ===
             openInvoice: (type) => {
                 history.pushState({modal: true}, null, ''); 
                 const id = parseInt(document.getElementById('entry-id').value);
@@ -1562,85 +1531,85 @@
                 
                 const genDateShort = new Date().toLocaleDateString('km-KH');
 
-                // យើងប្រើរចនាសម្ព័ន្ធ Table 100% ដើម្បីធានាថាទីតាំងមិនរត់ពេល Save
+                // ប្រើ Table Layout សុទ្ធ ដើម្បីការពារអក្សរជាន់គ្នា
                 let html = `
-                <div id="invoice-capture" style="width: 500px; min-height: 600px; background: white; padding: 30px; margin: 0 auto; font-family: 'Battambang', sans-serif; position: relative;">
+                <div id="invoice-capture" style="width: 100%; max-width: 600px; background: white; padding: 20px; margin: 0 auto; font-family: 'Battambang', sans-serif; color: #000;">
                     
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <table style="width: 100%; margin-bottom: 20px; border-bottom: 2px solid #0f766e; padding-bottom: 10px;">
                         <tr>
-                            <td style="vertical-align: top;">
-                                <h1 style="margin: 0; color: #0f766e; font-size: 24px; font-weight: bold; text-transform: uppercase;">MY SHOP</h1>
-                                <p style="margin: 5px 0 0; color: #64748b; font-size: 11px;">Phnom Penh, Cambodia</p>
-                                <p style="margin: 0; color: #64748b; font-size: 11px;">Tel: 012 345 678</p>
+                            <td style="vertical-align: top; width: 60%;">
+                                <h1 style="margin: 0; color: #0f766e; font-size: 22px; font-weight: bold; text-transform: uppercase; font-family: 'Times New Roman', serif;">Bosba Ladies Dress</h1>
+                                <p style="margin: 5px 0 0; font-size: 11px; color: #444;">Phnom Penh, Cambodia</p>
+                                <p style="margin: 0; font-size: 11px; color: #444;">Professional Fashion & Retail</p>
                             </td>
-                            <td style="text-align: right; vertical-align: top;">
-                                <div style="font-size: 28px; font-weight: bold; color: #e2e8f0; letter-spacing: 2px;">INVOICE</div>
-                                <div style="color: #0f766e; font-weight: bold; font-size: 14px;">#${o.id.toString().slice(-6)}</div>
-                                <div style="color: #64748b; font-size: 11px; margin-top: 5px;">Date: ${genDateShort}</div>
+                            <td style="text-align: right; vertical-align: top; width: 40%;">
+                                <div style="font-size: 24px; font-weight: bold; color: #333; letter-spacing: 1px;">វិក្កយបត្រ</div>
+                                <div style="font-size: 12px; color: #666; text-transform: uppercase;">INVOICE</div>
+                                <div style="color: #0f766e; font-weight: bold; font-size: 14px; margin-top: 5px;">#${o.id.toString().slice(-6)}</div>
+                                <div style="font-size: 11px; color: #444;">កាលបរិច្ឆេទ: ${genDateShort}</div>
                             </td>
                         </tr>
                     </table>
 
-                    <div style="width: 100%; height: 2px; background-color: #0f766e; margin-bottom: 20px;"></div>
-
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+                    <table style="width: 100%; margin-bottom: 20px;">
                         <tr>
-                            <td style="width: 100%;">
-                                <div style="font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;">អតិថិជន / BILL TO:</div>
-                                <div style="font-size: 16px; font-weight: bold; color: #334155; margin-bottom: 2px;">${o.custName}</div>
-                                <div style="font-size: 12px; color: #475569;">${o.custPhone}</div>
-                                <div style="font-size: 12px; color: #475569;">${o.custAddr || 'N/A'}</div>
+                            <td style="width: 55%; vertical-align: top; padding-right: 10px;">
+                                <div style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase; border-bottom: 1px solid #eee; margin-bottom: 5px;">អតិថិជន (Bill To):</div>
+                                <div style="font-size: 14px; font-weight: bold; color: #000;">${o.custName}</div>
+                                <div style="font-size: 12px; color: #333;">${o.custPhone}</div>
+                                <div style="font-size: 12px; color: #333;">${o.custAddr || 'N/A'}</div>
+                            </td>
+                            <td style="width: 45%; vertical-align: top; padding-left: 10px; border-left: 1px dashed #ccc;">
+                                <div style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase; border-bottom: 1px solid #eee; margin-bottom: 5px;">អ្នកលក់ (From):</div>
+                                <div style="font-size: 14px; font-weight: bold; color: #000;">Bosba Ladies Dress</div>
+                                <div style="font-size: 12px; color: #333;">Tel: 012 345 678</div>
                             </td>
                         </tr>
                     </table>
 
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                         <thead>
-                            <tr style="background-color: #f1f5f9;">
-                                <th style="padding: 10px; text-align: left; font-size: 11px; color: #475569; border-bottom: 2px solid #e2e8f0;">បរិយាយ (DESCRIPTION)</th>
-                                <th style="padding: 10px; text-align: center; font-size: 11px; color: #475569; border-bottom: 2px solid #e2e8f0;">បរិមាណ (QTY)</th>
-                                <th style="padding: 10px; text-align: right; font-size: 11px; color: #475569; border-bottom: 2px solid #e2e8f0;">តម្លៃ (AMOUNT)</th>
+                            <tr style="background-color: #f0fdfa; color: #0f766e;">
+                                <th style="padding: 8px; text-align: left; font-size: 11px; border: 1px solid #ccfbf1;">បរិយាយ (Description)</th>
+                                <th style="padding: 8px; text-align: center; font-size: 11px; border: 1px solid #ccfbf1; width: 50px;">ចំនួន</th>
+                                <th style="padding: 8px; text-align: right; font-size: 11px; border: 1px solid #ccfbf1; width: 80px;">តម្លៃ</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9;">
-                                    <div style="font-weight: bold; font-size: 13px; color: #1e293b;">${o.prodName}</div>
-                                    ${o.prodSize ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">Size: ${o.prodSize}</div>` : ''}
+                                <td style="padding: 10px 8px; border: 1px solid #e2e8f0;">
+                                    <div style="font-weight: bold; font-size: 13px; color: #000;">${o.prodName}</div>
+                                    ${o.prodSize ? `<div style="font-size: 10px; color: #666;">Size: ${o.prodSize}</div>` : ''}
                                 </td>
-                                <td style="padding: 12px 10px; text-align: center; font-weight: bold; font-size: 13px; color: #334155; border-bottom: 1px solid #f1f5f9;">${o.prodQty}</td>
-                                <td style="padding: 12px 10px; text-align: right; font-weight: bold; font-size: 13px; color: #334155; border-bottom: 1px solid #f1f5f9;">$${f.sale.toFixed(2)}</td>
+                                <td style="padding: 10px 8px; text-align: center; font-weight: bold; font-size: 13px; color: #000; border: 1px solid #e2e8f0;">${o.prodQty}</td>
+                                <td style="padding: 10px 8px; text-align: right; font-weight: bold; font-size: 13px; color: #000; border: 1px solid #e2e8f0;">$${f.sale.toFixed(2)}</td>
                             </tr>
                             ${f.shipIn > 0 ? `
                             <tr>
-                                <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 12px;">ថ្លៃដឹកជញ្ជូន (Shipping Fee)</td>
-                                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f1f5f9;">-</td>
-                                <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 12px; color: #334155; border-bottom: 1px solid #f1f5f9;">$${f.shipIn.toFixed(2)}</td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0; font-size: 11px; color: #555;">ថ្លៃដឹកជញ្ជូន (Delivery Fee)</td>
+                                <td style="padding: 8px; text-align: center; border: 1px solid #e2e8f0;">-</td>
+                                <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 12px; color: #000; border: 1px solid #e2e8f0;">$${f.shipIn.toFixed(2)}</td>
                             </tr>` : ''}
                         </tbody>
                     </table>
 
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <table style="width: 100%;">
                         <tr>
-                            <td style="width: 60%;"></td>
-                            <td style="width: 40%;">
-                                <table style="width: 100%;">
+                            <td style="width: 50%;"></td>
+                            <td style="width: 50%;">
+                                <table style="width: 100%; border-collapse: collapse;">
                                     <tr>
-                                        <td style="padding: 5px 0; font-size: 12px; color: #64748b;">សរុប (Total):</td>
-                                        <td style="padding: 5px 0; text-align: right; font-weight: bold; font-size: 14px; color: #334155;">$${f.income.toFixed(2)}</td>
-                                    </tr>
-                                    <tr style="border-top: 2px solid #0f766e;">
-                                        <td style="padding: 10px 0; font-size: 14px; font-weight: bold; color: #0f766e;">សរុបរួម (Grand Total):</td>
-                                        <td style="padding: 10px 0; text-align: right; font-size: 18px; font-weight: bold; color: #0f766e;">$${f.income.toFixed(2)}</td>
+                                        <td style="padding: 5px; font-size: 12px; font-weight: bold; text-align: right;">សរុបរួម (Grand Total):</td>
+                                        <td style="padding: 5px; font-size: 16px; font-weight: bold; text-align: right; color: #0f766e;">$${f.income.toFixed(2)}</td>
                                     </tr>
                                 </table>
                             </td>
                         </tr>
                     </table>
 
-                    <div style="position: absolute; bottom: 30px; left: 30px; right: 30px; text-align: center;">
-                        <p style="font-size: 12px; color: #334155; font-weight: bold; margin-bottom: 5px;">សូមអរគុណ! Thank You!</p>
-                        <p style="font-size: 10px; color: #94a3b8;">ទំនិញទិញហើយមិនអាចដូរវិញបានទេ។</p>
+                    <div style="margin-top: 30px; text-align: center; border-top: 1px dashed #ccc; padding-top: 15px;">
+                        <p style="font-size: 14px; color: #0f766e; font-weight: bold; font-family: 'Noto Serif Khmer', serif;">អរគុណដែលបានគាំទ្រអាជីវកម្មពួកយើង</p>
+                        <p style="font-size: 10px; color: #999; margin-top: 2px;">Thank you for supporting our business!</p>
                     </div>
 
                 </div>`;
@@ -1679,29 +1648,27 @@
                 }); 
             },
             // === បន្ថែមថ្មីសម្រាប់ Print Invoice A4 ស្អាត (FIXED) ===
+            // === PRINT INVOICE A4 (FIXED SIZE) ===
             printInvoice: () => {
-                const content = document.getElementById('invoice-viewer').innerHTML;
+                const content = document.getElementById('invoice-capture').innerHTML;
                 const printArea = document.getElementById('print-area');
                 
-                // យកតែខ្លឹមសារ Invoice មកដាក់ក្នុងក្រដាស Print
-                // យើងបន្ថែម CSS ឱ្យវាពង្រីកពេញក្រដាស A4 (width: 100%)
+                // បង្កើតទម្រង់ A4 ជាក់លាក់
                 printArea.innerHTML = `
-                    <div style="font-family: 'Battambang', sans-serif; padding: 20px; width: 100%;">
+                    <div class="print-page-content">
                         ${content}
                     </div>
                 `;
                 
-                // ជំហានទី ១: បង្ហាញ Print Area
                 printArea.classList.remove('hidden'); 
                 document.body.classList.add('printing-statement'); 
 
-                // ជំហានទី ២: Force Reflow (ឱ្យ Browser គូររូបរាងថ្មីភ្លាមៗ)
+                // Force layout update
                 const _ = printArea.offsetHeight; 
 
-                // ជំហានទី ៣: ហៅ Print
                 window.print();
 
-                // ជំហានទី ៤: លាក់វិញបន្ទាប់ពី Print ចប់
+                // Cleanup
                 setTimeout(() => {
                     document.body.classList.remove('printing-statement');
                     printArea.classList.add('hidden'); 
