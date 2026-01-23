@@ -876,155 +876,215 @@
         };
 
         const ui = {
-            // ៣.១ បន្ថែម function ថ្មីនេះចូលក្នុង ui = { ... } (ដាក់កន្លែងណាក៏បានក្នុង ui)
-            printCurrentInvoice: () => {
-            const printBtn = document.querySelector('#invoice-actions button:last-child');
-                const originalText = printBtn.innerHTML;
-                printBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            // ===========================================
+            // 1. SAVE IMAGE (ថ្មី៖ ផ្ទៃពណ៌សច្បាស់ល្អ)
+            // ===========================================
+            // ===========================================
+            // 1. SAVE IMAGE (FIXED: Layout, Colors & Cut-off)
+            // ===========================================
+            // ===========================================
+            // 1. SAVE IMAGE (FIXED: TALL & ELEGANT LAYOUT)
+            // ===========================================
+            // ===========================================
+            // 1. SAVE IMAGE (FINAL FIX: AUTO-HEIGHT & CRISP TEXT)
+            // ===========================================
+            saveInvoiceAsImage: () => {
+                const source = document.getElementById('invoice-viewer');
+                if (!source) return;
 
-                // ១. បង្ហាញ Class
-                document.body.classList.add('printing-invoice');
+                ui.showToast("⏳ កំពុងបង្កើតរូបភាព...");
+
+                // 1. បង្កើត Container ថ្មីសម្រាប់ថត
+                const container = document.createElement('div');
                 
-                // ២. រង់ចាំ 500ms ឱ្យទូរស័ព្ទ Render ទាន់សិន ចាំហៅ Print
+                // ចម្លង HTML ពី Preview
+                container.innerHTML = source.innerHTML;
+
+                // 2. កំណត់ Style ឱ្យច្បាស់លាស់ (សំខាន់បំផុត!)
+                // យើងប្រើ width 450px ដើម្បីឱ្យវាចេញមក "វែង" (Long Receipt Style)
+                // បើដាក់ Width ធំពេក វានឹងចេញមកខ្លី
+                container.style.cssText = `
+                    position: fixed; 
+                    top: 0; left: 0;
+                    width: 450px; /* ទទឹងស្តង់ដារវិក្កយបត្រ */
+                    height: auto !important; /* ឱ្យវាវែងចុះក្រោមតាមទិន្ន័យ */
+                    min-height: 100%;
+                    background-color: #ffffff !important;
+                    color: #000000 !important;
+                    font-family: 'Battambang', sans-serif;
+                    z-index: -9999; /* លាក់នៅខាងក្រោយ */
+                    padding: 30px;
+                    box-sizing: border-box;
+                    margin: 0;
+                    overflow: visible !important; /* បង្ខំឱ្យបង្ហាញទាំងអស់ */
+                `;
+
+                // បង្ខំ Light Mode
+                container.classList.add('bg-white', 'text-black');
+                
+                // 3. សម្អាត CSS ដែលធ្វើឱ្យបែក Layout (សំខាន់ណាស់!)
+                // ដោះ Class ណាដែលកំណត់កំពស់ ឬ Scroll ចោល
+                const allElements = container.getElementsByTagName("*");
+                for (let i = 0; i < allElements.length; i++) {
+                    const el = allElements[i];
+                    el.classList.remove('dark'); // លុប Dark Mode
+                    el.style.overflow = 'visible'; // លុប Scrollbar
+                    el.style.maxHeight = 'none'; // លុបការកំណត់កំពស់អតិបរមា
+                    
+                    // បង្ខំពណ៌អក្សរឱ្យខ្មៅច្បាស់
+                    const style = window.getComputedStyle(el);
+                    if(style.color === 'rgb(255, 255, 255)' || style.color === 'rgb(209, 213, 219)') {
+                         el.style.color = '#000000';
+                    }
+                    if(style.backgroundColor === 'rgb(31, 41, 59)' || style.backgroundColor === 'rgba(0, 0, 0, 0)') {
+                        el.style.backgroundColor = 'transparent';
+                    }
+                }
+
+                document.body.appendChild(container);
+
+                // 4. ថតរូបភាព
                 setTimeout(() => {
-                    window.print();
-                    
-                    // ៣. រង់ចាំ 1 វិនាទីក្រោយមក ចាំលាក់វិញ (ដើម្បីឱ្យប្រាកដថាទូរស័ព្ទចាប់យករូបភាពហើយ)
-                    setTimeout(() => {
-                        document.body.classList.remove('printing-invoice');
-                        printBtn.innerHTML = originalText;
-                    }, 1000);
-                }, 500);    
+                    // វាស់កម្ពស់ពិតប្រាកដបន្ទាប់ពី Render ចប់
+                    const realHeight = container.scrollHeight;
+
+                    html2canvas(container, {
+                        scale: 3, // គុណភាពច្បាស់ខ្លាំង (3x Resolution)
+                        useCORS: true,
+                        backgroundColor: "#ffffff",
+                        width: 450, // ថតទទឹង 450px
+                        height: realHeight, // ថតកម្ពស់ពេញលេញ
+                        windowWidth: 450,
+                        windowHeight: realHeight,
+                        scrollY: -window.scrollY,
+                        onclone: (clonedDoc) => {
+                            clonedDoc.documentElement.classList.remove('dark');
+                        }
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = `Invoice_${Date.now()}.png`;
+                        link.href = canvas.toDataURL("image/png", 1.0);
+                        link.click();
+                        
+                        if(document.body.contains(container)) document.body.removeChild(container);
+                        ui.showToast("✅ រក្សាទុកជោគជ័យ!");
+                    }).catch(err => {
+                        console.error(err);
+                        if(document.body.contains(container)) document.body.removeChild(container);
+                        ui.showToast("❌ បរាជ័យក្នុងការរក្សាទុក");
+                    });
+                }, 800); // ទុកពេល 0.8s ឱ្យ Browser រៀប layout ឱ្យស្អាត
             },
+            // ===========================================
+            // 2. PRINT / PDF (ថ្មី៖ ចេញតែក្រដាសវិក្កយបត្រ)
+            // ===========================================
+            // ===========================================
+            // 2. PRINT / PDF (FIXED: A4 Standard, No Black BG, Single Page)
+            // ===========================================
+            printCurrentInvoice: () => {
+                const content = document.getElementById('invoice-viewer');
+                if (!content) return;
 
-            // ៣.២ កែប្រែ function generatePDFStatement ដែលមានស្រាប់ ឱ្យដូចខាងក្រោម៖
-            generatePDFStatement: () => {
-                const data = ui.getFilteredReportData();
-                if(data.length === 0) { ui.showToast("⚠️ គ្មានទិន្ន័យសម្រាប់ Download"); return; }
-                
-                const start = document.getElementById('date-start').value;
-                const end = document.getElementById('date-end').value;
-                const genDate = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-                
-                let tSale=0, tExp=0, tProf=0, tQty=0;
-                
-                let tableRows = '';
-                data.forEach(o => {
-                    const f = app.calc(o); 
-                    tSale += f.income; tExp += f.expense; tProf += f.profit; tQty += parseInt(o.prodQty);
-                    
-                    const profitClass = f.profit >= 0 ? 'print-text-teal' : 'print-text-red';
-                    
-                    // បង្កើត Status Badge
-                    let statusBadge = '';
-                    if(o.status === 'pending') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fff7ed; color:#c2410c; border-radius:3px; border:1px solid #ffedd5;">PENDING</span>';
-                    else if(o.status === 'cancelled') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fef2f2; color:#b91c1c; border-radius:3px; border:1px solid #fee2e2;">CANCEL</span>';
+                const iframe = document.createElement('iframe');
+                // ដាក់ iframe ឱ្យដាច់ដើម្បីកុំឱ្យប៉ះពាល់ UI
+                iframe.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;';
+                document.body.appendChild(iframe);
 
-                    tableRows += `
-                        <tr>
-                            <td style="width: 15%;">${new Date(o.updatedAt).toLocaleDateString()}</td>
-                            <td style="width: 25%;">
-                                <div style="font-weight:bold; color:#1e293b;">${o.custName}</div>
-                                <div style="font-size:9px; color:#64748b; margin-top:2px;">${o.custPhone}</div>
-                            </td>
-                            <td style="width: 25%;">
-                                <div style="color:#334155;">${o.prodName} <span style="color:#94a3b8; font-size:10px;">(${o.prodSize||'-'})</span></div>
-                                <div style="margin-top:2px;">${statusBadge}</div>
-                            </td>
-                            <td style="width: 10%; text-align:center; font-weight:bold;">${o.prodQty}</td>
-                            <td style="width: 12%; text-align:right; font-family:monospace; font-size:12px;">$${f.income.toFixed(2)}</td>
-                            <td style="width: 13%; text-align:right; font-family:monospace; font-size:12px; font-weight:bold;" class="${profitClass}">
-                                ${f.profit >= 0 ? '+' : ''}$${f.profit.toFixed(2)}
-                            </td>
-                        </tr>`;
-                });
+                const doc = iframe.contentWindow.document;
+                doc.open();
+                doc.write(`
+                    <!DOCTYPE html>
+                    <html lang="km">
+                        <head>
+                            <title>Print Invoice</title>
+                            <script src="https://cdn.tailwindcss.com"></scr` + `ipt>
+                            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+                            <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+                            <style>
+                                /* FORCE PRINT STYLES */
+                                @import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap');
+                                
+                                @page {
+                                    size: A4;
+                                    margin: 0; /* បំបាត់ Margin របស់ Browser */
+                                }
+                                
+                                html, body {
+                                    width: 100%;
+                                    height: 100%;
+                                    margin: 0;
+                                    padding: 0;
+                                    background-color: #ffffff !important; /* បង្ខំផ្ទៃស */
+                                    -webkit-print-color-adjust: exact !important;
+                                    print-color-adjust: exact !important;
+                                }
 
-                const printArea = document.getElementById('print-area');
-                printArea.innerHTML = `
-                    <div>
-                        <div style="width:100%; height:6px; background: linear-gradient(90deg, #0d9488 0%, #0f766e 100%); margin-bottom: 30px;"></div>
+                                body {
+                                    font-family: 'Battambang', sans-serif;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: flex-start;
+                                    padding-top: 40px; /* គម្លាតពីលើ */
+                                }
 
-                        <div class="flex justify-between items-start mb-10">
-                            <div>
-                                <h1 style="font-family: 'Times New Roman', serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #0f766e; text-transform: uppercase; margin-bottom: 5px;">Bosba Ladies Dress</h1>
-                                <p style="font-size: 11px; color: #64748b; line-height: 1.5;">
-                                    Phnom Penh, Cambodia<br>
-                                    Professional Fashion & Retail
-                                </p>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="font-size: 24px; font-weight: 300; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">Statement</div>
-                                <div style="margin-top: 8px; font-size: 11px; color: #334155;">
-                                    <strong>Period:</strong> ${start} — ${end}<br>
-                                    <strong>Date:</strong> ${genDate}
+                                /* ប្រអប់ Invoice ពេល Print */
+                                .print-container {
+                                    width: 100%;
+                                    max-width: 210mm; /* ទទឹង A4 */
+                                    background: white;
+                                    display: flex;
+                                    justify-content: center;
+                                }
+
+                                /* កំណត់ទំហំជាក់លាក់ឱ្យដូចវិក្កយបត្រ */
+                                .invoice-content {
+                                    width: 90mm; /* ទំហំវិក្កយបត្រស្តង់ដារដែលមើលទៅស្អាតលើ A4 */
+                                    border: 1px solid #e5e7eb;
+                                    padding: 20px;
+                                    border-radius: 12px;
+                                    background-color: #ffffff !important;
+                                    box-shadow: none !important;
+                                    color: #000000 !important;
+                                }
+                                
+                                /* បិទ Scrollbar និងធានាថាអក្សរមិនខូច */
+                                ::-webkit-scrollbar { display: none; }
+                                * { -webkit-font-smoothing: antialiased; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="print-container">
+                                <div class="invoice-content">
+                                    ${content.innerHTML}
                                 </div>
                             </div>
-                        </div>
+                            <script>
+                                // បិទ Dark Mode ក្នុង iframe
+                                document.documentElement.classList.remove('dark');
+                            </scr` + `ipt>
+                        </body>
+                    </html>
+                `);
+                doc.close();
 
-                        <div style="display: flex; gap: 15px; margin-bottom: 30px;">
-                            <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 5px;">Total Revenue</div>
-                                <div style="font-size: 22px; font-weight: 700; color: #334155;">$${tSale.toFixed(2)}</div>
-                            </div>
-                            <div style="flex: 1; padding: 15px; background: #fff1f2; border: 1px solid #ffe4e6; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #be123c; letter-spacing: 0.5px; margin-bottom: 5px;">Total Expenses</div>
-                                <div style="font-size: 22px; font-weight: 700; color: #be123c;">$${tExp.toFixed(2)}</div>
-                            </div>
-                            <div style="flex: 1; padding: 15px; background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #0f766e; letter-spacing: 0.5px; margin-bottom: 5px;">Net Profit</div>
-                                <div style="font-size: 22px; font-weight: 700; color: #0d9488;">$${tProf.toFixed(2)}</div>
-                            </div>
-                        </div>
-
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="text-align:left;">Date</th>
-                                    <th style="text-align:left;">Customer</th>
-                                    <th style="text-align:left;">Product Details</th>
-                                    <th style="text-align:center;">Qty</th>
-                                    <th style="text-align:right;">Amount</th>
-                                    <th style="text-align:right;">Profit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${tableRows}
-                            </tbody>
-                            <tfoot>
-                                <tr style="background-color: #fff; border-top: 2px solid #334155;">
-                                    <td colspan="3" style="text-align:right; padding-top: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase;">Grand Total</td>
-                                    <td style="text-align:center; padding-top: 15px; font-weight: bold; font-size: 13px;">${tQty}</td>
-                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 13px;">$${tSale.toFixed(2)}</td>
-                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 14px; color: #0f766e;">$${tProf.toFixed(2)}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-
-                        <div style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                            <p style="font-family: 'Times New Roman', serif; font-style: italic; color: #64748b; font-size: 12px; margin-bottom: 5px;">Thank you for your business!</p>
-                            <p style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Generated by Bosba System • All Rights Reserved</p>
-                        </div>
-                    </div>
-                `;
-                
-                // EXECUTE PRINT
-                printArea.classList.remove('hidden'); 
-                document.body.classList.add('printing-statement'); 
-                
-                setTimeout(() => {
-                    window.print();
+                iframe.contentWindow.onload = function() {
+                    // រង់ចាំបន្តិចឱ្យ Font និង Tailwind Load ចប់
                     setTimeout(() => {
-                        document.body.classList.remove('printing-statement');
-                        printArea.classList.add('hidden'); 
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                        // លុប iframe ចោលពេល Print ចប់
+                        setTimeout(() => { 
+                            if(document.body.contains(iframe)) document.body.removeChild(iframe); 
+                        }, 2000);
                     }, 1000);
-                }, 500);
+                };
             },
+
             showToast: (msg) => { const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); },
             toggleTheme: () => { document.documentElement.classList.toggle('dark'); const isDark = document.documentElement.classList.contains('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); document.getElementById('theme-icon').className = isDark ? 'fas fa-sun text-yellow-300' : 'fas fa-moon text-white'; },
             
             switchTab: (tabId) => { 
                 if(tabId !== 'home') history.pushState({page: tabId}, null, '');
-                
                 const navItems = document.querySelectorAll('.nav-item');
                 navItems.forEach(el => el.classList.remove('active'));
 
@@ -1040,26 +1100,14 @@
                 const reportHeader = document.getElementById('report-header-container');
                 
                 if (tabId === 'home') {
-                    homeHeader.style.display = 'block';
-                    reportHeader.style.display = 'none';
-                    homeHeader.classList.remove('hide-ui');
-                    window.scrollTo(0,0);
+                    homeHeader.style.display = 'block'; reportHeader.style.display = 'none'; homeHeader.classList.remove('hide-ui'); window.scrollTo(0,0);
                 } else if (tabId === 'reports') {
-                    homeHeader.style.display = 'none';
-                    reportHeader.style.display = 'block';
-                    reportHeader.classList.remove('hide-ui');
-                    ui.renderStats();
-                    window.scrollTo(0,0);
+                    homeHeader.style.display = 'none'; reportHeader.style.display = 'block'; reportHeader.classList.remove('hide-ui'); ui.renderStats(); window.scrollTo(0,0);
                 } else {
-                    homeHeader.style.display = 'none';
-                    reportHeader.style.display = 'none';
+                    homeHeader.style.display = 'none'; reportHeader.style.display = 'none';
                 }
                 
-                if (tabId === 'history') {
-                    if (typeof renderProfessionalHistory === 'function') {
-                        renderProfessionalHistory();
-                    }
-                }
+                if (tabId === 'history') { if (typeof renderProfessionalHistory === 'function') renderProfessionalHistory(); }
             },
             
             filterList: (f) => { app.filter = f; ui.renderHome(); },
@@ -1075,29 +1123,14 @@
             },
 
             initDatePickers: () => {
-                const config = {
-                    dateFormat: "Y-m-d",
-                    disableMobile: true,
-                    onChange: (selectedDates, dateStr, instance) => {
-                         document.querySelectorAll('.date-filter-btn').forEach(b => {
-                            b.className = 'date-filter-btn py-2 rounded-lg text-[10px] font-bold border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-95 transition shadow-sm w-full';
-                        });
-                        ui.renderStats();
-                    }
-                };
+                const config = { dateFormat: "Y-m-d", disableMobile: true, onChange: (selectedDates, dateStr, instance) => { document.querySelectorAll('.date-filter-btn').forEach(b => { b.className = 'date-filter-btn py-2 rounded-lg text-[10px] font-bold border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-95 transition shadow-sm w-full'; }); ui.renderStats(); } };
                 fpStart = flatpickr("#date-start", config);
                 fpEnd = flatpickr("#date-end", config);
             },
 
             setReportDate: (range) => {
-                const now = new Date();
-                let start = new Date();
-                let end = new Date();
-                
-                document.querySelectorAll('.date-filter-btn').forEach(b => {
-                    b.className = 'date-filter-btn py-2 rounded-lg text-[10px] font-bold border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-95 transition shadow-sm w-full';
-                });
-
+                const now = new Date(); let start = new Date(); let end = new Date();
+                document.querySelectorAll('.date-filter-btn').forEach(b => { b.className = 'date-filter-btn py-2 rounded-lg text-[10px] font-bold border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-95 transition shadow-sm w-full'; });
                 const activeBtn = document.getElementById(`btn-${range}`);
                 if(activeBtn) activeBtn.className = 'date-filter-btn py-2 rounded-lg text-[10px] font-bold active:scale-95 transition w-full date-btn-active';
 
@@ -1106,89 +1139,48 @@
                 else if(range === 'thisWeek') { const day = now.getDay() || 7; if(day !== 1) start.setHours(-24 * (day - 1)); }
                 else if(range === 'thisMonth') { start.setDate(1); }
                 
-                if(fpStart) fpStart.setDate(start);
-                if(fpEnd) fpEnd.setDate(end);
-                ui.renderStats();
+                if(fpStart) fpStart.setDate(start); if(fpEnd) fpEnd.setDate(end); ui.renderStats();
             },
 
             getFilteredReportData: () => {
-                const sStr = document.getElementById('date-start').value;
-                const eStr = document.getElementById('date-end').value;
+                const sStr = document.getElementById('date-start').value; const eStr = document.getElementById('date-end').value;
                 if(!sStr || !eStr) return [];
-                const s = new Date(sStr); const e = new Date(eStr);
-                s.setHours(0,0,0,0); e.setHours(23,59,59,999);
-                
-                return app.data.filter(o => { 
-                    // កែប្រែ៖ ដក "|| o.status === 'cancelled'" ចេញ ដើម្បីឱ្យប្រព័ន្ធរាប់បញ្ចូលការខាតបង់លើការកុម្មង់ដែលបរាជ័យ
-                    if(o.isDeleted) return false; 
-                    const d = new Date(o.updatedAt); 
-                    return d >= s && d <= e; 
-                });
+                const s = new Date(sStr); const e = new Date(eStr); s.setHours(0,0,0,0); e.setHours(23,59,59,999);
+                return app.data.filter(o => { if(o.isDeleted) return false; const d = new Date(o.updatedAt); return d >= s && d <= e; });
             },
+
             openDrillDown: (type) => {
                 const data = ui.getFilteredReportData();
-                const start = document.getElementById('date-start').value;
-                const end = document.getElementById('date-end').value;
+                const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value;
                 const modal = document.getElementById('modal-drilldown');
-                const title = document.getElementById('drill-title');
-                const sub = document.getElementById('drill-subtitle');
-                const content = document.getElementById('drill-content');
-                const footer = document.getElementById('drill-footer');
+                const title = document.getElementById('drill-title'); const sub = document.getElementById('drill-subtitle'); const content = document.getElementById('drill-content'); const footer = document.getElementById('drill-footer');
                 
-                modal.classList.remove('hidden');
-                sub.innerText = `ចន្លោះកាលបរិច្ឆេទ: ${start} ដល់ ${end}`;
-                footer.classList.add('hidden');
+                modal.classList.remove('hidden'); sub.innerText = `ចន្លោះកាលបរិច្ឆេទ: ${start} ដល់ ${end}`; footer.classList.add('hidden');
 
                 if (type === 'orders') {
-                    title.innerHTML = '<i class="fas fa-shopping-cart text-blue-600 mr-2"></i> បញ្ជីការលក់ (Orders List)';
-                    footer.classList.remove('hidden');
+                    title.innerHTML = '<i class="fas fa-shopping-cart text-blue-600 mr-2"></i> បញ្ជីការលក់ (Orders List)'; footer.classList.remove('hidden');
                     if (data.length === 0) { content.innerHTML = '<div class="text-center text-gray-400 mt-10">គ្មានទិន្ន័យ</div>'; return; }
                     let html = '<div class="space-y-3">';
-                    data.forEach(o => {
-                        const f = app.calc(o);
-                        html += `<div class="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 shadow-sm active:scale-95 transition cursor-pointer" onclick="ui.openOrderModal(${o.id})"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-xs">${o.prodQty}</div><div><div class="font-bold text-gray-800 dark:text-gray-200 text-sm">${o.custName}</div><div class="text-xs text-gray-500">${o.prodName}</div></div></div><div class="text-right"><div class="font-bold text-teal-600">$${f.income.toFixed(2)}</div><div class="text-[10px] text-gray-400">Profit: $${f.profit.toFixed(2)}</div></div></div>`;
-                    });
+                    data.forEach(o => { const f = app.calc(o); html += `<div class="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 shadow-sm active:scale-95 transition cursor-pointer" onclick="ui.openOrderModal(${o.id})"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-xs">${o.prodQty}</div><div><div class="font-bold text-gray-800 dark:text-gray-200 text-sm">${o.custName}</div><div class="text-xs text-gray-500">${o.prodName}</div></div></div><div class="text-right"><div class="font-bold text-teal-600">$${f.income.toFixed(2)}</div><div class="text-[10px] text-gray-400">Profit: $${f.profit.toFixed(2)}</div></div></div>`; });
                     content.innerHTML = html + '</div>';
-
                 } else if (type === 'profit') {
                     title.innerHTML = '<i class="fas fa-coins text-emerald-600 mr-2"></i> ប្រភពប្រាក់ចំណេញ (P&L)';
                     let tSale=0, tCogs=0, tExp=0, tProf=0;
                     data.forEach(o => { const f=app.calc(o); tSale+=f.sale; tCogs+=f.cogs; tExp+=(f.expense-f.cogs); tProf+=f.profit; });
-
-                    content.innerHTML = `
-                        <div class="space-y-4 font-sans">
-                            <div class="flex justify-between items-center p-4 bg-blue-50 rounded-2xl border border-blue-100"><div><span class="block text-xs text-blue-500 font-bold uppercase">ចំណូលពីការលក់</span></div><div class="text-xl font-bold text-blue-700">$${tSale.toFixed(2)}</div></div>
-                            <div class="flex justify-center"><i class="fas fa-minus text-gray-300"></i></div>
-                            <div class="flex justify-between items-center p-3 bg-red-50 rounded-xl border border-red-100"><div><span class="text-sm text-gray-600">ថ្លៃដើម (COGS)</span></div><div class="font-bold text-red-500">-$${tCogs.toFixed(2)}</div></div>
-                            <div class="flex justify-between items-center p-3 bg-orange-50 rounded-xl border border-orange-100"><div><span class="text-sm text-gray-600">ចំណាយផ្សេងៗ</span></div><div class="font-bold text-orange-500">-$${tExp.toFixed(2)}</div></div>
-                            <div class="border-b-2 border-dashed border-gray-300 my-2"></div>
-                            <div class="flex justify-between items-center p-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg text-white"><div><span class="block text-xs text-emerald-100 font-bold uppercase">ចំណេញសុទ្ធ (Net Profit)</span></div><div class="text-3xl font-bold">$${tProf.toFixed(2)}</div></div>
-                        </div>`;
-
+                    content.innerHTML = `<div class="space-y-4 font-sans"><div class="flex justify-between items-center p-4 bg-blue-50 rounded-2xl border border-blue-100"><div><span class="block text-xs text-blue-500 font-bold uppercase">ចំណូលពីការលក់</span></div><div class="text-xl font-bold text-blue-700">$${tSale.toFixed(2)}</div></div><div class="flex justify-center"><i class="fas fa-minus text-gray-300"></i></div><div class="flex justify-between items-center p-3 bg-red-50 rounded-xl border border-red-100"><div><span class="text-sm text-gray-600">ថ្លៃដើម (COGS)</span></div><div class="font-bold text-red-500">-$${tCogs.toFixed(2)}</div></div><div class="flex justify-between items-center p-3 bg-orange-50 rounded-xl border border-orange-100"><div><span class="text-sm text-gray-600">ចំណាយផ្សេងៗ</span></div><div class="font-bold text-orange-500">-$${tExp.toFixed(2)}</div></div><div class="border-b-2 border-dashed border-gray-300 my-2"></div><div class="flex justify-between items-center p-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg text-white"><div><span class="block text-xs text-emerald-100 font-bold uppercase">ចំណេញសុទ្ធ (Net Profit)</span></div><div class="text-3xl font-bold">$${tProf.toFixed(2)}</div></div></div>`;
                 } else if (type === 'margin') {
                     title.innerHTML = '<i class="fas fa-chart-pie text-purple-600 mr-2"></i> វិភាគ Margin %';
                     let tInc=0, tCogs=0, tExp=0, nProf=0;
                     data.forEach(o => { const f=app.calc(o); tInc+=(f.sale+f.shipIn); tCogs+=f.cogs; tExp+=(f.shipExp+f.boost); nProf+=f.profit; });
                     if(tInc === 0) tInc = 1; 
                     const pP = Math.round((nProf/tInc)*100); const pC = Math.round((tCogs/tInc)*100); const pE = Math.round((tExp/tInc)*100);
-                    
                     const chartStyle = `background: conic-gradient(#0d9488 0% ${pP}%, #ef4444 ${pP}% ${pP+pC}%, #f97316 ${pP+pC}% 100%);`;
-
-                    content.innerHTML = `
-                        <div class="flex flex-col items-center justify-center pt-4">
-                            <div class="relative w-48 h-48 rounded-full shadow-inner mb-6" style="${chartStyle}"><div class="absolute inset-4 bg-white dark:bg-gray-800 rounded-full flex flex-col items-center justify-center shadow-lg"><span class="text-gray-400 text-xs uppercase font-bold">Margin</span><span class="text-4xl font-extrabold text-teal-600">${pP}%</span></div></div>
-                            <div class="w-full bg-gray-50 dark:bg-gray-700/30 rounded-2xl p-4 space-y-3">
-                                <div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-teal-600"></div><span class="text-sm">ចំណេញ (Profit)</span></div><span class="font-bold text-teal-600">${pP}%</span></div>
-                                <div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-red-500"></div><span class="text-sm">ថ្លៃដើម (COGS)</span></div><span class="font-bold text-red-500">${pC}%</span></div>
-                                <div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-orange-500"></div><span class="text-sm">ចំណាយ (Exp)</span></div><span class="font-bold text-orange-500">${pE}%</span></div>
-                            </div>
-                        </div>`;
+                    content.innerHTML = `<div class="flex flex-col items-center justify-center pt-4"><div class="relative w-48 h-48 rounded-full shadow-inner mb-6" style="${chartStyle}"><div class="absolute inset-4 bg-white dark:bg-gray-800 rounded-full flex flex-col items-center justify-center shadow-lg"><span class="text-gray-400 text-xs uppercase font-bold">Margin</span><span class="text-4xl font-extrabold text-teal-600">${pP}%</span></div></div><div class="w-full bg-gray-50 dark:bg-gray-700/30 rounded-2xl p-4 space-y-3"><div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-teal-600"></div><span class="text-sm">ចំណេញ (Profit)</span></div><span class="font-bold text-teal-600">${pP}%</span></div><div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-red-500"></div><span class="text-sm">ថ្លៃដើម (COGS)</span></div><span class="font-bold text-red-500">${pC}%</span></div><div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-orange-500"></div><span class="text-sm">ចំណាយ (Exp)</span></div><span class="font-bold text-orange-500">${pE}%</span></div></div></div>`;
                 }
             },
 
             renderStats: () => {
-                let allTimeProfit = 0;
-                let allTimeOrders = 0;
+                let allTimeProfit = 0; let allTimeOrders = 0;
                 app.data.forEach(o => { if(!o.isDeleted && o.status === 'completed') { const f = app.calc(o); allTimeProfit += f.profit; allTimeOrders++; } });
                 document.getElementById('lbl-lifetime-profit').innerText = `$${allTimeProfit.toFixed(2)}`;
                 document.getElementById('lbl-lifetime-orders').innerText = allTimeOrders;
@@ -1203,26 +1195,19 @@
                     if(!prodMap[o.prodName]) prodMap[o.prodName] = 0; prodMap[o.prodName] += parseInt(o.prodQty);
                 });
 
-                // === កែប្រែត្រង់នេះ (Drill Down Triggers) ===
-                const elCount = document.getElementById('rpt-order-count');
-                elCount.innerText = data.length;
-                // ធ្វើឱ្យ Card Order ចុចបាន
+                const elCount = document.getElementById('rpt-order-count'); elCount.innerText = data.length;
                 elCount.parentElement.onclick = () => ui.openDrillDown('orders');
                 elCount.parentElement.className = "report-item relative overflow-hidden bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 cursor-pointer active:scale-95 transition hover:shadow-lg";
 
-                const elProfit = document.getElementById('rpt-net-profit');
-                elProfit.innerText = `$${netProfit.toFixed(2)}`;
-                // ធ្វើឱ្យ Card Profit ចុចបាន
+                const elProfit = document.getElementById('rpt-net-profit'); elProfit.innerText = `$${netProfit.toFixed(2)}`;
                 elProfit.parentElement.onclick = () => ui.openDrillDown('profit');
                 elProfit.parentElement.className = "report-item card-gradient-green relative overflow-hidden cursor-pointer active:scale-95 transition hover:shadow-lg";
 
                 document.getElementById('rpt-total-income').innerText = `$${totalInc.toFixed(2)}`;
-                
-                // ធ្វើឱ្យ Card Margin ចុចបាន
                 const elMargin = document.getElementById('rpt-margin');
                 elMargin.parentElement.onclick = () => ui.openDrillDown('margin');
                 elMargin.parentElement.className = "bg-gray-50 dark:bg-gray-800 rounded-xl p-3 mt-2 flex justify-between items-center border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition";
-                // ============================================
+                
                 document.getElementById('rpt-shipping-in').innerText = `$${shippingIn.toFixed(2)}`;
                 document.getElementById('rpt-cogs-total').innerText = `$${totalCogs.toFixed(2)}`;
                 document.getElementById('rpt-ship-exp').innerText = `$${totalShip.toFixed(2)}`;
@@ -1233,9 +1218,7 @@
                 const sortedProds = Object.entries(prodMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
                 const list = document.getElementById('top-products-list'); list.innerHTML = '';
                 if(sortedProds.length === 0) list.innerHTML = '<div class="p-4 text-center text-xs text-gray-400">មិនមានទិន្ន័យ</div>';
-                sortedProds.forEach(([name, qty]) => {
-                    list.innerHTML += `<div class="p-3 flex justify-between items-center text-sm"><span class="text-gray-700 dark:text-gray-300 font-bold truncate pr-2">${name}</span><span class="px-2 py-1 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-md">${qty} Sold</span></div>`;
-                });
+                sortedProds.forEach(([name, qty]) => { list.innerHTML += `<div class="p-3 flex justify-between items-center text-sm"><span class="text-gray-700 dark:text-gray-300 font-bold truncate pr-2">${name}</span><span class="px-2 py-1 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-md">${qty} Sold</span></div>`; });
             },
 
             renderHistory: () => { if (typeof renderProfessionalHistory === 'function') { renderProfessionalHistory(); } },
@@ -1248,132 +1231,29 @@
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Report_${document.getElementById('date-start').value}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             },
+
             generatePDFStatement: () => {
                 const data = ui.getFilteredReportData();
                 if(data.length === 0) { ui.showToast("⚠️ គ្មានទិន្ន័យសម្រាប់ Download"); return; }
-                
-                const start = document.getElementById('date-start').value;
-                const end = document.getElementById('date-end').value;
-                const genDate = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-                
-                let tSale=0, tExp=0, tProf=0, tQty=0;
-                
-                let tableRows = '';
+                const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; const genDate = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+                let tSale=0, tExp=0, tProf=0, tQty=0; let tableRows = '';
                 data.forEach(o => {
-                    const f = app.calc(o); 
-                    tSale += f.income; tExp += f.expense; tProf += f.profit; tQty += parseInt(o.prodQty);
-                    
+                    const f = app.calc(o); tSale += f.income; tExp += f.expense; tProf += f.profit; tQty += parseInt(o.prodQty);
                     const profitClass = f.profit >= 0 ? 'print-text-teal' : 'print-text-red';
-                    
-                    // Status Badge
                     let statusBadge = '';
                     if(o.status === 'pending') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fff7ed; color:#c2410c; border-radius:3px; border:1px solid #ffedd5;">PENDING</span>';
                     else if(o.status === 'cancelled') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fef2f2; color:#b91c1c; border-radius:3px; border:1px solid #fee2e2;">CANCEL</span>';
 
-                    tableRows += `
-                        <tr>
-                            <td style="width: 15%;">${new Date(o.updatedAt).toLocaleDateString()}</td>
-                            <td style="width: 25%;">
-                                <div style="font-weight:bold; color:#1e293b;">${o.custName}</div>
-                                <div style="font-size:9px; color:#64748b; margin-top:2px;">${o.custPhone}</div>
-                            </td>
-                            <td style="width: 25%;">
-                                <div style="color:#334155;">${o.prodName} <span style="color:#94a3b8; font-size:10px;">(${o.prodSize||'-'})</span></div>
-                                <div style="margin-top:2px;">${statusBadge}</div>
-                            </td>
-                            <td style="width: 10%; text-align:center; font-weight:bold;">${o.prodQty}</td>
-                            <td style="width: 12%; text-align:right; font-family:monospace; font-size:12px;">$${f.income.toFixed(2)}</td>
-                            <td style="width: 13%; text-align:right; font-family:monospace; font-size:12px; font-weight:bold;" class="${profitClass}">
-                                ${f.profit >= 0 ? '+' : ''}$${f.profit.toFixed(2)}
-                            </td>
-                        </tr>`;
+                    tableRows += `<tr><td style="width: 15%;">${new Date(o.updatedAt).toLocaleDateString()}</td><td style="width: 25%;"><div style="font-weight:bold; color:#1e293b;">${o.custName}</div><div style="font-size:9px; color:#64748b; margin-top:2px;">${o.custPhone}</div></td><td style="width: 25%;"><div style="color:#334155;">${o.prodName} <span style="color:#94a3b8; font-size:10px;">(${o.prodSize||'-'})</span></div><div style="margin-top:2px;">${statusBadge}</div></td><td style="width: 10%; text-align:center; font-weight:bold;">${o.prodQty}</td><td style="width: 12%; text-align:right; font-family:monospace; font-size:12px;">$${f.income.toFixed(2)}</td><td style="width: 13%; text-align:right; font-family:monospace; font-size:12px; font-weight:bold;" class="${profitClass}">${f.profit >= 0 ? '+' : ''}$${f.profit.toFixed(2)}</td></tr>`;
                 });
 
                 const printArea = document.getElementById('print-area');
-                printArea.innerHTML = `
-                    <div>
-                        <div style="width:100%; height:6px; background: linear-gradient(90deg, #0d9488 0%, #0f766e 100%); margin-bottom: 30px;"></div>
-
-                        <div class="flex justify-between items-start mb-10">
-                            <div>
-                                <h1 style="font-family: 'Times New Roman', serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #0f766e; text-transform: uppercase; margin-bottom: 5px;">Bosba Ladies Dress</h1>
-                                <p style="font-size: 11px; color: #64748b; line-height: 1.5;">
-                                    Phnom Penh, Cambodia<br>
-                                    Professional Fashion & Retail
-                                </p>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="font-size: 24px; font-weight: 300; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">Statement</div>
-                                <div style="margin-top: 8px; font-size: 11px; color: #334155;">
-                                    <strong>Period:</strong> ${start} — ${end}<br>
-                                    <strong>Date:</strong> ${genDate}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; gap: 15px; margin-bottom: 30px;">
-                            <div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 5px;">Total Revenue</div>
-                                <div style="font-size: 22px; font-weight: 700; color: #334155;">$${tSale.toFixed(2)}</div>
-                            </div>
-                            <div style="flex: 1; padding: 15px; background: #fff1f2; border: 1px solid #ffe4e6; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #be123c; letter-spacing: 0.5px; margin-bottom: 5px;">Total Expenses</div>
-                                <div style="font-size: 22px; font-weight: 700; color: #be123c;">$${tExp.toFixed(2)}</div>
-                            </div>
-                            <div style="flex: 1; padding: 15px; background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 8px;">
-                                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #0f766e; letter-spacing: 0.5px; margin-bottom: 5px;">Net Profit</div>
-                                <div style="font-size: 22px; font-weight: 700; color: #0d9488;">$${tProf.toFixed(2)}</div>
-                            </div>
-                        </div>
-
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="text-align:left;">Date</th>
-                                    <th style="text-align:left;">Customer</th>
-                                    <th style="text-align:left;">Product Details</th>
-                                    <th style="text-align:center;">Qty</th>
-                                    <th style="text-align:right;">Amount</th>
-                                    <th style="text-align:right;">Profit</th>
-                                </tr>
-                            </thead>
-                            <tbody>${tableRows}</tbody>
-                            <tfoot>
-                                <tr style="background-color: #fff; border-top: 2px solid #334155;">
-                                    <td colspan="3" style="text-align:right; padding-top: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase;">Grand Total</td>
-                                    <td style="text-align:center; padding-top: 15px; font-weight: bold; font-size: 13px;">${tQty}</td>
-                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 13px;">$${tSale.toFixed(2)}</td>
-                                    <td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 14px; color: #0f766e;">$${tProf.toFixed(2)}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-
-                        <div style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                            <p style="font-family: 'Times New Roman', serif; font-style: italic; color: #64748b; font-size: 12px; margin-bottom: 5px;">Thank you for your business!</p>
-                            <p style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Generated by Bosba System • All Rights Reserved</p>
-                        </div>
-                    </div>
-                `;
+                printArea.innerHTML = `<div><div style="width:100%; height:6px; background: linear-gradient(90deg, #0d9488 0%, #0f766e 100%); margin-bottom: 30px;"></div><div class="flex justify-between items-start mb-10"><div><h1 style="font-family: 'Times New Roman', serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #0f766e; text-transform: uppercase; margin-bottom: 5px;">Bosba Ladies Dress</h1><p style="font-size: 11px; color: #64748b; line-height: 1.5;">Phnom Penh, Cambodia<br>Professional Fashion & Retail</p></div><div style="text-align: right;"><div style="font-size: 24px; font-weight: 300; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">Statement</div><div style="margin-top: 8px; font-size: 11px; color: #334155;"><strong>Period:</strong> ${start} — ${end}<br><strong>Date:</strong> ${genDate}</div></div></div><div style="display: flex; gap: 15px; margin-bottom: 30px;"><div style="flex: 1; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;"><div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 5px;">Total Revenue</div><div style="font-size: 22px; font-weight: 700; color: #334155;">$${tSale.toFixed(2)}</div></div><div style="flex: 1; padding: 15px; background: #fff1f2; border: 1px solid #ffe4e6; border-radius: 8px;"><div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #be123c; letter-spacing: 0.5px; margin-bottom: 5px;">Total Expenses</div><div style="font-size: 22px; font-weight: 700; color: #be123c;">$${tExp.toFixed(2)}</div></div><div style="flex: 1; padding: 15px; background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 8px;"><div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #0f766e; letter-spacing: 0.5px; margin-bottom: 5px;">Net Profit</div><div style="font-size: 22px; font-weight: 700; color: #0d9488;">$${tProf.toFixed(2)}</div></div></div><table><thead><tr><th style="text-align:left;">Date</th><th style="text-align:left;">Customer</th><th style="text-align:left;">Product Details</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Amount</th><th style="text-align:right;">Profit</th></tr></thead><tbody>${tableRows}</tbody><tfoot><tr style="background-color: #fff; border-top: 2px solid #334155;"><td colspan="3" style="text-align:right; padding-top: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase;">Grand Total</td><td style="text-align:center; padding-top: 15px; font-weight: bold; font-size: 13px;">${tQty}</td><td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 13px;">$${tSale.toFixed(2)}</td><td style="text-align:right; padding-top: 15px; font-weight: bold; font-size: 14px; color: #0f766e;">$${tProf.toFixed(2)}</td></tr></tfoot></table><div style="margin-top: 50px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;"><p style="font-family: 'Times New Roman', serif; font-style: italic; color: #64748b; font-size: 12px; margin-bottom: 5px;">Thank you for your business!</p><p style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Generated by Bosba System • All Rights Reserved</p></div></div>`;
                 
-                // === ចំណុចសំខាន់ដែលបានកែប្រែ (CRITICAL FIX FOR MOBILE) ===
-                printArea.classList.remove('hidden'); 
-                document.body.classList.add('printing-statement'); 
-                
-                // បន្ថយមកត្រឹម 100ms (លឿនល្មមឱ្យ Browser មិន Block, យឺតល្មមឱ្យ Render ទាន់)
-                setTimeout(() => {
-                    try {
-                        window.print();
-                    } catch (e) {
-                        alert("មិនអាច Print បានទេ: " + e);
-                    } finally {
-                        // ប្រើ Finally ដើម្បីធានាថាអេក្រង់នឹងត្រឡប់មកធម្មតាវិញ ទោះ Print ចេញ ឬមិនចេញ
-                        setTimeout(() => {
-                            document.body.classList.remove('printing-statement');
-                            printArea.classList.add('hidden'); 
-                        }, 500); // រង់ចាំបន្តិចបន្ទាប់ពីផ្ទាំង Print បិទ
-                    }
-                }, 100); 
-            },            
+                printArea.classList.remove('hidden'); document.body.classList.add('printing-statement');
+                setTimeout(() => { try { window.print(); } catch (e) { alert("Error: " + e); } finally { setTimeout(() => { document.body.classList.remove('printing-statement'); printArea.classList.add('hidden'); }, 500); } }, 100); 
+            },           
+
             shareReportText: () => {
                 const p = document.getElementById('rpt-net-profit').innerText; const o = document.getElementById('rpt-order-count').innerText; const s = document.getElementById('rpt-total-income').innerText; 
                 const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value;
@@ -1394,8 +1274,7 @@
                 if (activeData.length === 0) { container.innerHTML = `<div class="text-center mt-20 opacity-40"><i class="fas fa-box-open text-5xl mb-3 text-gray-300 dark:text-gray-600"></i><p class="text-sm text-gray-400 dark:text-gray-500">មិនមានទិន្ន័យ</p></div>`; return; }
                 
                 activeData.forEach(o => {
-                    const f = app.calc(o); 
-                    const totalPay = (parseFloat(o.valSale)||0) + (parseFloat(o.valShipIn)||0);
+                    const f = app.calc(o); const totalPay = (parseFloat(o.valSale)||0) + (parseFloat(o.valShipIn)||0);
                     const el = document.createElement('div');
                     let st = { bg: 'bg-orange-50', text: 'text-orange-600', strip: 'bg-orange-400', label: 'រង់ចាំ', icon: 'fa-clock' };
                     if(o.status === 'ordered') st = { bg: 'bg-blue-50', text: 'text-blue-600', strip: 'bg-blue-500', label: 'បានកុម្មង់', icon: 'fa-cart-shopping' };
@@ -1409,42 +1288,7 @@
                     else paymentHtml = `<span class="text-gray-400 font-bold text-[11px]">-</span>`;
 
                     el.className = 'order-card p-0 group'; el.onclick = () => ui.openOrderModal(o.id);
-                    el.innerHTML = `
-                        <div class="card-strip ${st.strip}"></div>
-                        <div class="p-5 pl-6">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="status-badge ${st.bg} ${st.text}"><i class="fas ${st.icon}"></i> ${st.label}</span>
-                                <span class="text-[11px] text-gray-400 dark:text-gray-500 font-bold font-sans tracking-wide">${new Date(o.updatedAt).toLocaleDateString('km-KH')}</span>
-                            </div>
-                            <div class="mb-3 pb-3 border-b border-gray-100 dark:border-gray-700/50">
-                                <h4 class="font-bold text-gray-800 dark:text-white text-lg leading-tight mb-1">${o.custName}</h4>
-                                <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                                    <span class="flex items-center gap-1"><i class="fas fa-phone-alt text-[10px] mt-[3px]"></i> ${o.custPhone || 'N/A'}</span>
-                                    <span class="flex items-center gap-1 max-w-[150px] truncate"><i class="fas fa-map-marker-alt text-[10px] mt-[3px]"></i> ${o.custAddr || 'N/A'}</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-start">
-                                <div class="flex-1 pr-2">
-                                    <div class="font-bold text-gray-700 dark:text-gray-200 text-sm mb-1">${o.prodName}</div>
-                                    <div class="flex flex-wrap gap-2">
-                                        ${o.prodSize ? `<span class="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-[10px] font-bold text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">Size: ${o.prodSize}</span>` : ''}
-                                        <span class="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-900/30 text-[10px] font-bold text-teal-700 dark:text-teal-400 border border-teal-100 dark:border-teal-800">Qty: ${o.prodQty}</span>
-                                    </div>
-                                </div>
-                                <div class="text-right flex flex-col items-end">
-                                    <div class="font-bold text-xl ${f.profit >= 0 ? 'text-teal-600 dark:text-teal-400' : 'text-red-500'} mb-1">${f.profit >= 0 ? '+' : ''}$${f.profit.toFixed(2)}</div>
-                                </div>
-                            </div>
-                            <hr class="border-dashed border-gray-200 dark:border-gray-700/50 my-3">
-                            <div class="flex justify-between items-center">
-                                <div>${paymentHtml}</div>
-                                <div class="flex gap-2">
-                                    ${o.note ? `<button onclick="event.stopPropagation(); ui.showNote('${o.note.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center hover:bg-yellow-100 transition border border-yellow-100"><i class="fas fa-sticky-note text-xs"></i></button>` : ''}
-                                    <button onclick="event.stopPropagation(); ui.confirmDelete(${o.id})" class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 flex items-center justify-center hover:bg-red-100 transition border border-red-100 dark:border-red-900/30"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    el.innerHTML = `<div class="card-strip ${st.strip}"></div><div class="p-5 pl-6"><div class="flex justify-between items-center mb-3"><span class="status-badge ${st.bg} ${st.text}"><i class="fas ${st.icon}"></i> ${st.label}</span><span class="text-[11px] text-gray-400 dark:text-gray-500 font-bold font-sans tracking-wide">${new Date(o.updatedAt).toLocaleDateString('km-KH')}</span></div><div class="mb-3 pb-3 border-b border-gray-100 dark:border-gray-700/50"><h4 class="font-bold text-gray-800 dark:text-white text-lg leading-tight mb-1">${o.custName}</h4><div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400"><span class="flex items-center gap-1"><i class="fas fa-phone-alt text-[10px] mt-[3px]"></i> ${o.custPhone || 'N/A'}</span><span class="flex items-center gap-1 max-w-[150px] truncate"><i class="fas fa-map-marker-alt text-[10px] mt-[3px]"></i> ${o.custAddr || 'N/A'}</span></div></div><div class="flex justify-between items-start"><div class="flex-1 pr-2"><div class="font-bold text-gray-700 dark:text-gray-200 text-sm mb-1">${o.prodName}</div><div class="flex flex-wrap gap-2">${o.prodSize ? `<span class="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-[10px] font-bold text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">Size: ${o.prodSize}</span>` : ''}<span class="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-900/30 text-[10px] font-bold text-teal-700 dark:text-teal-400 border border-teal-100 dark:border-teal-800">Qty: ${o.prodQty}</span></div></div><div class="text-right flex flex-col items-end"><div class="font-bold text-xl ${f.profit >= 0 ? 'text-teal-600 dark:text-teal-400' : 'text-red-500'} mb-1">${f.profit >= 0 ? '+' : ''}$${f.profit.toFixed(2)}</div></div></div><hr class="border-dashed border-gray-200 dark:border-gray-700/50 my-3"><div class="flex justify-between items-center"><div>${paymentHtml}</div><div class="flex gap-2">${o.note ? `<button onclick="event.stopPropagation(); ui.showNote('${o.note.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center hover:bg-yellow-100 transition border border-yellow-100"><i class="fas fa-sticky-note text-xs"></i></button>` : ''}<button onclick="event.stopPropagation(); ui.confirmDelete(${o.id})" class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 flex items-center justify-center hover:bg-red-100 transition border border-red-100 dark:border-red-900/30"><i class="fas fa-trash-alt text-xs"></i></button></div></div></div>`;
                     container.appendChild(el);
                 });
             },
@@ -1477,14 +1321,12 @@
                     if(!custName || !prodName) { alert("សូមបញ្ចូលឈ្មោះអតិថិជន និងឈ្មោះទំនិញ!"); return; }
 
                     const payload = {
-                        id: idStr ? parseInt(idStr) : Date.now(),
-                        updatedAt: new Date().toISOString(),
+                        id: idStr ? parseInt(idStr) : Date.now(), updatedAt: new Date().toISOString(),
                         custName: custName, custPhone: document.getElementById('cust-phone').value, custAddr: document.getElementById('cust-addr').value,
                         prodName: prodName, prodSize: document.getElementById('prod-size').value, prodQty: document.getElementById('prod-qty').value,
                         valSale: document.getElementById('val-sale').value, valShipIn: document.getElementById('val-ship-in').value,
                         costBuy: document.getElementById('cost-buy').value, costShip: document.getElementById('cost-ship').value, costBoost: document.getElementById('cost-boost').value,
-                        note: document.getElementById('note').value,
-                        status: document.getElementById('status').value, isDeleted: false
+                        note: document.getElementById('note').value, status: document.getElementById('status').value, isDeleted: false
                     };
                     
                     const existingIdx = app.data.findIndex(x => x.id === payload.id);
@@ -1493,7 +1335,6 @@
                     
                     ui.renderHome(); ui.renderStats(); ui.closeModal('modal-order'); ui.showToast('✅ រក្សាទុកជោគជ័យ');
                     await db.put(payload); if(!idStr) await app.logActivity(`បានបង្កើត: ${payload.prodName}`);
-
                 } catch(e) { alert("Error: " + e); }
             },
 
@@ -1513,33 +1354,10 @@
             closeConfirm: () => { ui.confirmType = null; ui.confirmId = null; document.getElementById('modal-confirm-overlay').classList.add('hidden'); },
             onConfirmYes: async () => {
                 const type = ui.confirmType; const id = ui.confirmId; ui.closeConfirm();
-                
-                if (type === 'delete' && id) { 
-                    const item = app.data.find(x => x.id === id); 
-                    if(item) { item.isDeleted = true; ui.renderHome(); ui.showToast('🗑️ បានលុបទៅធុងសំរាម'); await db.put(item); await app.logActivity(`បានលុប: ${item.prodName}`); ui.closeModal('modal-order'); } 
-                } 
-                else if (type === 'restore' && id) { 
-                    const item = app.data.find(x => x.id === id); 
-                    if(item) { item.isDeleted = false; ui.renderTrashList(); ui.renderHome(); ui.renderStats(); ui.showToast('♻️ បានយកមកវិញ'); await db.put(item); await app.logActivity(`បាន Restore: ${item.prodName}`); } 
-                } 
-                else if (type === 'empty_trash') { 
-                    // === ចំណុចបានកែប្រែ (FIXED) ===
-                    // ១. ចាប់យកទិន្ន័យដែលត្រូវលុបទុកសិន
-                    const trash = app.data.filter(x => x.isDeleted); 
-                    
-                    // ២. លុបចេញពីអេក្រង់ និង Memory ភ្លាមៗ (កុំរង់ចាំ DB)
-                    app.data = app.data.filter(x => !x.isDeleted); 
-                    ui.renderTrashList(); 
-                    ui.showToast('🧹 សម្អាតធុងសំរាមរួចរាល់!'); 
-
-                    // ៣. ធ្វើការលុបក្នុង Database តាមក្រោយ (Background Process)
-                    for(let t of trash) { await db.delete(t.id); } 
-                    await app.logActivity('បានសម្អាតធុងសំរាម'); 
-                    // =================================
-                } 
-                else if (type === 'reset_app') { 
-                    document.getElementById('app-loader').style.display = 'flex'; document.getElementById('loader-text').innerText = "កំពុងលុបចោលទិន្ន័យ..."; await db.clear(); await db.clear('logs'); localStorage.clear(); setTimeout(() => { location.reload(); }, 1500); 
-                }
+                if (type === 'delete' && id) { const item = app.data.find(x => x.id === id); if(item) { item.isDeleted = true; ui.renderHome(); ui.showToast('🗑️ បានលុបទៅធុងសំរាម'); await db.put(item); await app.logActivity(`បានលុប: ${item.prodName}`); ui.closeModal('modal-order'); } } 
+                else if (type === 'restore' && id) { const item = app.data.find(x => x.id === id); if(item) { item.isDeleted = false; ui.renderTrashList(); ui.renderHome(); ui.renderStats(); ui.showToast('♻️ បានយកមកវិញ'); await db.put(item); await app.logActivity(`បាន Restore: ${item.prodName}`); } } 
+                else if (type === 'empty_trash') { const trash = app.data.filter(x => x.isDeleted); app.data = app.data.filter(x => !x.isDeleted); ui.renderTrashList(); ui.showToast('🧹 សម្អាតធុងសំរាមរួចរាល់!'); for(let t of trash) { await db.delete(t.id); } await app.logActivity('បានសម្អាតធុងសំរាម'); } 
+                else if (type === 'reset_app') { document.getElementById('app-loader').style.display = 'flex'; document.getElementById('loader-text').innerText = "កំពុងលុបចោលទិន្ន័យ..."; await db.clear(); await db.clear('logs'); localStorage.clear(); setTimeout(() => { location.reload(); }, 1500); }
             },
             
             confirmDelete: (id) => ui.askConfirm('delete', id),
@@ -1547,118 +1365,21 @@
             renderTrashList: () => {
                 const list = document.getElementById('trash-list'); list.innerHTML = ''; const deleted = app.data.filter(o => o.isDeleted);
                 if(deleted.length === 0) list.innerHTML = '<div class="text-center mt-20 text-gray-400"><i class="fas fa-trash-alt text-4xl mb-2"></i><p>ធុងសំរាមស្អាត</p></div>';
-                deleted.forEach(o => {
-                    const d = document.createElement('div'); d.className = 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl flex justify-between items-center';
-                    d.innerHTML = `<div><h4 class="font-bold text-gray-700 dark:text-gray-200 text-lg mb-1">${o.prodName}</h4><p class="text-sm text-gray-500 font-sans">${new Date(o.updatedAt).toLocaleDateString()}</p></div><button onclick="ui.restore(${o.id})" class="px-4 py-2 bg-teal-100 text-teal-800 text-sm font-bold rounded-lg hover:bg-teal-200 transition"><i class="fas fa-undo mr-1"></i> Restore</button>`;
-                    list.appendChild(d);
-                });
+                deleted.forEach(o => { const d = document.createElement('div'); d.className = 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl flex justify-between items-center'; d.innerHTML = `<div><h4 class="font-bold text-gray-700 dark:text-gray-200 text-lg mb-1">${o.prodName}</h4><p class="text-sm text-gray-500 font-sans">${new Date(o.updatedAt).toLocaleDateString()}</p></div><button onclick="ui.restore(${o.id})" class="px-4 py-2 bg-teal-100 text-teal-800 text-sm font-bold rounded-lg hover:bg-teal-200 transition"><i class="fas fa-undo mr-1"></i> Restore</button>`; list.appendChild(d); });
             },
             restore: (id) => ui.askConfirm('restore', id),
             
             openInvoice: (type) => {
                 history.pushState({modal: true}, null, ''); 
-                const id = parseInt(document.getElementById('entry-id').value); 
-                const o = app.data.find(x => x.id === id); 
-                if(!o) return; 
-                const f = app.calc(o); 
-                const viewer = document.getElementById('invoice-viewer');
+                const id = parseInt(document.getElementById('entry-id').value); const o = app.data.find(x => x.id === id); if(!o) return; 
+                const f = app.calc(o); const viewer = document.getElementById('invoice-viewer');
                 
-                const signatureSection = type === 'admin' ? '' : `
-                    <div class="flex justify-between items-end mt-14 px-4">
-                        <div class="text-center">
-                            <div class="border-b border-gray-300 w-24 mb-2"></div>
-                            <span class="text-[9px] font-bold text-gray-600">អ្នកទទួល</span>
-                        </div>
-                        <div class="text-center">
-                            <div class="border-b border-gray-300 w-24 mb-2"></div>
-                            <span class="text-[9px] font-bold text-gray-600">អ្នកលក់</span>
-                        </div>
-                    </div>`;
+                const signatureSection = type === 'admin' ? '' : `<div class="flex justify-between items-end mt-14 px-4"><div class="text-center"><div class="border-b border-gray-300 w-24 mb-2"></div><span class="text-[9px] font-bold text-gray-600">អ្នកទទួល</span></div><div class="text-center"><div class="border-b border-gray-300 w-24 mb-2"></div><span class="text-[9px] font-bold text-gray-600">អ្នកលក់</span></div></div>`;
 
-                let html = `
-                <div id="invoice-capture" class="bg-white p-6 relative overflow-hidden" style="font-family: 'Battambang', sans-serif;">
-                    
-                    <div class="absolute top-0 left-0 w-full h-1.5 bg-teal-600"></div>
-                    <div class="text-center mb-6 border-b border-teal-500 pb-3">
-                        <h2 class="text-xl font-bold text-teal-700">វិក្កយបត្រ</h2>
-                        <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">INVOICE #${o.id.toString().slice(-6)}</p>
-                        <p class="text-[9px] text-gray-400 mt-0.5">${new Date().toLocaleString('km-KH')}</p>
-                    </div>
-
-                    <div class="flex justify-between text-[10px] mb-6 gap-2">
-                        <div class="text-left flex-1 pr-2">
-                            <span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">Bill To:</span>
-                            <span class="font-bold text-gray-800 text-[10px] block mb-0.5 line-clamp-1">${o.custName}</span>
-                            <div class="text-gray-500 leading-tight text-[9px]">${o.custPhone}</div>
-                            <div class="text-gray-500 leading-tight mt-0.5 break-words text-[9px]">${o.custAddr || '-'}</div>
-                        </div>
-                        <div class="text-right w-auto pl-2 whitespace-nowrap">
-                            <span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">From:</span>
-                            <span class="font-bold text-gray-800 text-[10px] block mb-0.5">Bosba Ladies Dress</span>
-                            <div class="text-gray-500 leading-tight text-[9px]">Phnom Penh, Cambodia</div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="flex justify-between bg-teal-50 p-1.5 rounded-t border-b border-teal-100">
-                            <span class="text-[9px] font-bold text-teal-700 uppercase">បរិយាយ (Description)</span>
-                            <span class="text-[9px] font-bold text-teal-700 uppercase">តម្លៃ (Price)</span>
-                        </div>
-                        <div class="flex justify-between items-start p-2 border-b border-gray-100">
-                            <div>
-                                <div class="text-[10px] font-bold text-gray-800">${o.prodName}</div>
-                                <div class="text-[9px] text-gray-500 mt-0.5">Size: ${o.prodSize || '-'} | Qty: ${o.prodQty}</div>
-                            </div>
-                            <div class="text-[10px] font-bold text-gray-800">$${f.sale.toFixed(2)}</div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end mb-4">
-                        <div class="w-1/2 space-y-1 text-right">
-                            <div class="flex justify-between text-[9px] text-gray-600 px-1">
-                                <span>សរុបរង:</span>
-                                <span class="font-medium">$${f.sale.toFixed(2)}</span>
-                            </div>
-                            <div class="flex justify-between text-[9px] text-gray-600 px-1">
-                                <span>ថ្លៃដឹក:</span>
-                                <span class="font-medium">$${f.shipIn.toFixed(2)}</span>
-                            </div>
-                            <div class="flex justify-between items-center text-[11px] font-bold text-teal-800 mt-1 pt-1 border-t border-teal-100 bg-teal-50 px-2 py-1 rounded">
-                                <span>សរុបរួម:</span>
-                                <span>$${f.income.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    ${type === 'admin' ? `
-                        <div class="mt-4 pt-2 border-t border-red-100 bg-red-50 p-2 rounded border-dashed">
-                            <h4 class="text-center text-[8px] font-bold text-red-400 uppercase tracking-widest mb-1">INTERNAL USE ONLY</h4>
-                            <div class="grid grid-cols-2 gap-1 text-[9px] text-gray-600">
-                                <div>ថ្លៃដើម: <b>$${f.cogs.toFixed(2)}</b></div>
-                                <div>ដឹកចេញ: <b>$${f.shipExp.toFixed(2)}</b></div>
-                                <div>Ads: <b>$${f.boost.toFixed(2)}</b></div>
-                                <div>ចំណាយសរុប: <b class="text-red-500">$${f.expense.toFixed(2)}</b></div>
-                            </div>
-                            <div class="mt-1 text-center border-t border-red-200 pt-1">
-                                <span class="text-[9px] font-bold text-gray-500">ប្រាក់ចំណេញ</span>
-                                <div class="text-xs font-bold ${f.profit>=0?'text-green-600':'text-red-600'}">$${f.profit.toFixed(2)}</div>
-                            </div>
-                        </div>
-                    ` : `
-                        ${signatureSection}
-                        <div class="text-center mt-10 pt-4 border-t border-gray-100">
-                            <p class="text-[9px] text-gray-500 font-serif-kh">អរគុណដែលបានគាំទ្រអាជីវកម្មពួកយើង!</p>
-                        </div>
-                    `}
-                </div>`;
-                
-                viewer.innerHTML = html; 
-                document.getElementById('invoice-modal').classList.remove('hidden');
+                let html = `<div id="invoice-capture" class="bg-white p-6 relative overflow-hidden" style="font-family: 'Battambang', sans-serif;"><div class="absolute top-0 left-0 w-full h-1.5 bg-teal-600"></div><div class="text-center mb-6 border-b border-teal-500 pb-3"><h2 class="text-xl font-bold text-teal-700">វិក្កយបត្រ</h2><p class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">INVOICE #${o.id.toString().slice(-6)}</p><p class="text-[9px] text-gray-400 mt-0.5">${new Date().toLocaleString('km-KH')}</p></div><div class="flex justify-between text-[10px] mb-6 gap-2"><div class="text-left flex-1 pr-2"><span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">Bill To:</span><span class="font-bold text-gray-800 text-[10px] block mb-0.5 line-clamp-1">${o.custName}</span><div class="text-gray-500 leading-tight text-[9px]">${o.custPhone}</div><div class="text-gray-500 leading-tight mt-0.5 break-words text-[9px]">${o.custAddr || '-'}</div></div><div class="text-right w-auto pl-2 whitespace-nowrap"><span class="text-teal-600 font-bold block text-[8px] uppercase mb-0.5">From:</span><span class="font-bold text-gray-800 text-[10px] block mb-0.5">Bosba Ladies Dress</span><div class="text-gray-500 leading-tight text-[9px]">Phnom Penh, Cambodia</div></div></div><div class="mb-4"><div class="flex justify-between bg-teal-50 p-1.5 rounded-t border-b border-teal-100"><span class="text-[9px] font-bold text-teal-700 uppercase">បរិយាយ (Description)</span><span class="text-[9px] font-bold text-teal-700 uppercase">តម្លៃ (Price)</span></div><div class="flex justify-between items-start p-2 border-b border-gray-100"><div><div class="text-[10px] font-bold text-gray-800">${o.prodName}</div><div class="text-[9px] text-gray-500 mt-0.5">Size: ${o.prodSize || '-'} | Qty: ${o.prodQty}</div></div><div class="text-[10px] font-bold text-gray-800">$${f.sale.toFixed(2)}</div></div></div><div class="flex justify-end mb-4"><div class="w-1/2 space-y-1 text-right"><div class="flex justify-between text-[9px] text-gray-600 px-1"><span>សរុបរង:</span><span class="font-medium">$${f.sale.toFixed(2)}</span></div><div class="flex justify-between text-[9px] text-gray-600 px-1"><span>ថ្លៃដឹក:</span><span class="font-medium">$${f.shipIn.toFixed(2)}</span></div><div class="flex justify-between items-center text-[11px] font-bold text-teal-800 mt-1 pt-1 border-t border-teal-100 bg-teal-50 px-2 py-1 rounded"><span>សរុបរួម:</span><span>$${f.income.toFixed(2)}</span></div></div></div>${type === 'admin' ? `<div class="mt-4 pt-2 border-t border-red-100 bg-red-50 p-2 rounded border-dashed"><h4 class="text-center text-[8px] font-bold text-red-400 uppercase tracking-widest mb-1">INTERNAL USE ONLY</h4><div class="grid grid-cols-2 gap-1 text-[9px] text-gray-600"><div>ថ្លៃដើម: <b>$${f.cogs.toFixed(2)}</b></div><div>ដឹកចេញ: <b>$${f.shipExp.toFixed(2)}</b></div><div>Ads: <b>$${f.boost.toFixed(2)}</b></div><div>ចំណាយសរុប: <b class="text-red-500">$${f.expense.toFixed(2)}</b></div></div><div class="mt-1 text-center border-t border-red-200 pt-1"><span class="text-[9px] font-bold text-gray-500">ប្រាក់ចំណេញ</span><div class="text-xs font-bold ${f.profit>=0?'text-green-600':'text-red-600'}">$${f.profit.toFixed(2)}</div></div></div>` : `${signatureSection}<div class="text-center mt-10 pt-4 border-t border-gray-100"><p class="text-[9px] text-gray-500 font-serif-kh">អរគុណដែលបានគាំទ្រអាជីវកម្មពួកយើង!</p></div>`}</div>`;
+                viewer.innerHTML = html; document.getElementById('invoice-modal').classList.remove('hidden');
             },
-            saveInvoiceAsImage: () => { 
-                const element = document.getElementById('invoice-capture'); 
-                html2canvas(element, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", onclone: (clonedDoc) => { const el = clonedDoc.getElementById('invoice-capture'); el.style.fontFamily = "'Battambang', sans-serif"; el.style.letterSpacing = 'normal'; } }).then(canvas => { const link = document.createElement('a'); link.download = `Invoice_${new Date().toISOString().slice(0,10)}.png`; link.href = canvas.toDataURL("image/png", 1.0); link.click(); ui.showToast("✅ រក្សាទុកជារូបភាព!"); }); 
-            },
+
             shareTextOrder: async () => { const cName = document.getElementById('cust-name').value; const cPhone = document.getElementById('cust-phone').value; const cAddr = document.getElementById('cust-addr').value; const pName = document.getElementById('prod-name').value; const pSize = document.getElementById('prod-size').value; const pQty = document.getElementById('prod-qty').value; const vSale = parseFloat(document.getElementById('val-sale').value) || 0; const vShip = parseFloat(document.getElementById('val-ship-in').value) || 0; const total = vSale + vShip; const text = `📦 វិក្កយបត្រ / ORDER DETAIL\n------------------------\n👤 អតិថិជន: ${cName}\n📞 ទូរស័ព្ទ: ${cPhone}\n📍 ទីតាំង: ${cAddr}\n------------------------\n🛍️ ទំនិញ: ${pName} ${pSize ? '('+pSize+')' : ''}\n🔢 ចំនួន: ${pQty}\n------------------------\n💰 តម្លៃទំនិញ: $${vSale.toFixed(2)}\n🚚 ថ្លៃដឹក: $${vShip.toFixed(2)}\n💵 សរុប: $${total.toFixed(2)}\n------------------------\nអរគុណ! Thank you! 🙏`; if (navigator.share) { try { await navigator.share({ title: 'Order Details', text: text }); } catch(e) {} } else { navigator.clipboard.writeText(text); ui.showToast("📋 បានចម្លងអក្សរវិក្កយបត្រ!"); } },
             
             dataManager: {
@@ -1673,7 +1394,6 @@
                 resetApp: () => { ui.askConfirm('reset_app'); }, emptyTrash: () => ui.askConfirm('empty_trash')
             }
         };
-        
         ui.showImportConfirm = (count, data) => { document.getElementById('import-msg-count').innerText = `បានរកឃើញ ${count} ទិន្ន័យ`; const modal = document.getElementById('modal-import-overlay'); const btn = document.getElementById('btn-confirm-import'); const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn); newBtn.onclick = () => dataManager.executeImport(data); modal.classList.remove('hidden'); };
 
         const dataManager = ui.dataManager;
