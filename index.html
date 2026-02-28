@@ -47,6 +47,23 @@
         rel="stylesheet">
     <style>
         /* === 1. SYSTEM & GLASS EFFECTS === */
+        #app-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(248, 250, 252, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: opacity 0.5s ease;
+        }
+
+        .dark #app-loader {
+            background: rgba(2, 6, 23, 0.92);
+        }
+
         ::-webkit-scrollbar {
             display: none;
         }
@@ -821,10 +838,6 @@
             z-index: 10000;
         }
 
-        #app-loader {
-            z-index: 10001;
-        }
-
         /* Glass Box for Modals */
         .glass-box {
             background: rgba(255, 255, 255, 0.85);
@@ -1129,7 +1142,7 @@
                             style="animation: floatIcon 4s ease-in-out infinite;"></i>
 
                         <h1
-                            class="text-xl font-extrabold font-serif-kh tracking-wide drop-shadow-lg leading-tight text-white">
+                            class="whitespace-nowrap text-[clamp(14px,4.5vw,20px)] font-extrabold font-serif-kh tracking-wide drop-shadow-lg leading-tight text-white">
                             MY SMALL SHOP TRACKER
                         </h1>
                         <p class="text-[11px] text-teal-50 font-bold tracking-widest mt-1 opacity-90">
@@ -1195,20 +1208,23 @@
     <main class="main-content">
         <div id="view-home" class="section-view active">
             <div class="px-1 mb-3">
-                <div class="relative glass-panel rounded-2xl shadow-glass dark:shadow-glass-dark">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-teal-600"><i
-                            class="fas fa-filter text-lg"></i></div>
-                    <select id="filter-dropdown" onchange="ui.filterList(this.value)"
-                        class="w-full py-3.5 pl-10 pr-10 bg-transparent text-base font-bold text-gray-700 dark:text-white outline-none appearance-none rounded-2xl">
-                        <option value="all">📑 បង្ហាញទាំងអស់ (All)</option>
-                        <option value="pending">⏳ រង់ចាំ (Pending)</option>
-                        <option value="ordered">🛒 បានកុម្មង់ (Ordered)</option>
-                        <option value="shipping">🚚 កំពុងដឹក (Shipping)</option>
-                        <option value="completed">✅ ជោគជ័យ (Completed)</option>
-                        <option value="cancelled">❌ បោះបង់ (Cancelled)</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400"><i
-                            class="fas fa-chevron-down"></i></div>
+                <div id="statusFilterBtn"
+                    class="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/50 dark:border-slate-700/50 px-5 py-3.5 rounded-2xl shadow-sm flex justify-between items-center cursor-pointer mb-4 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all z-30 relative">
+                    <div class="flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium">
+                        <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
+                            </path>
+                        </svg>
+                        <span id="currentStatusText"
+                            class="text-[15px] font-semibold text-gray-700 dark:text-gray-200">📄 បង្ហាញទាំងអស់
+                            (All)</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
                 </div>
             </div>
             <div class="search-box-container px-1">
@@ -1262,17 +1278,24 @@
                                 class="fas fa-coins"></i></div>
                         <div
                             class="text-xs text-emerald-700 dark:text-emerald-200 font-bold uppercase mb-1 z-10 relative">
-                            ចំណេញ (Net Profit)</div>
-                        <div class="text-2xl font-bold text-emerald-800 dark:text-white z-10 relative"
+                            <span
+                                class="text-xs sm:text-sm text-emerald-700 dark:text-emerald-200 font-bold uppercase mb-1 z-10 relative leading-tight block">ចំណេញ
+                                (Net Profit)</span>
+                        </div>
+                        <div class="text-2xl sm:text-3xl font-bold text-emerald-800 dark:text-white z-10 relative"
                             id="rpt-net-profit">$0.00</div>
+                        <div id="rpt-pending-note"></div>
                     </div>
                     <div
                         class="report-item relative overflow-hidden bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800">
                         <div class="absolute right-[-10px] top-[-10px] text-6xl text-blue-500 opacity-10"><i
                                 class="fas fa-shopping-cart"></i></div>
                         <div class="text-xs text-blue-600 dark:text-blue-300 font-bold uppercase mb-1 z-10 relative">
-                            ចំនួនលក់ (Orders)</div>
-                        <div class="text-2xl font-bold text-blue-800 dark:text-white z-10 relative"
+                            <span
+                                class="text-xs sm:text-sm text-blue-600 dark:text-blue-300 font-bold uppercase mb-1 z-10 relative leading-tight block">ចំនួនលក់
+                                (Orders)</span>
+                        </div>
+                        <div class="text-2xl sm:text-3xl font-bold text-blue-800 dark:text-white z-10 relative"
                             id="rpt-order-count">0</div>
                     </div>
                 </div>
@@ -1341,7 +1364,7 @@
             </div>
         </div>
 
-        <div id="view-history" class="section-view hidden pt-24 pb-24 px-4">
+        <div id="view-history" class="section-view pt-24 pb-24 px-4">
             <div class="flex justify-between items-end mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 dark:text-white font-serif-kh">ប្រវត្តិប្រតិបត្តិការ
@@ -1599,11 +1622,7 @@
 
             <div
                 class="flex justify-between items-center px-5 py-4 z-20 shrink-0 border-b border-white/40 dark:border-white/5 bg-white/30 dark:bg-black/20 backdrop-blur-xl">
-                <div class="flex items-center gap-3 overflow-hidden">
-                    <div
-                        class="sticker-float w-10 h-10 shrink-0 rounded-xl bg-gradient-to-tr from-teal-400 to-emerald-500 shadow-lg shadow-teal-500/30 flex items-center justify-center text-white border border-white/30">
-                        <i class="fas fa-edit text-sm"></i>
-                    </div>
+                <div class="flex items-center overflow-hidden ml-4">
                     <div class="min-w-0 flex flex-col justify-center">
                         <h3 class="text-xl font-black font-serif-kh tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-teal-800 to-blue-800 dark:from-white dark:to-teal-200 drop-shadow-sm whitespace-nowrap overflow-hidden text-ellipsis leading-tight"
                             id="modal-title">
@@ -1646,10 +1665,10 @@
                         </div>
 
                         <div class="p-4 relative z-10">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/30 flex items-center justify-center text-white sticker-float"
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/30 flex items-center justify-center text-white sticker-float"
                                     style="animation-delay: 0.5s;">
-                                    <i class="fas fa-user text-xs"></i>
+                                    <i class="fas fa-user text-[10px]"></i>
                                 </div>
                                 <span
                                     class="text-xs font-extrabold text-blue-800 dark:text-blue-200 uppercase tracking-widest drop-shadow-sm">
@@ -1658,34 +1677,57 @@
                             </div>
 
                             <div class="space-y-3">
-                                <input type="text" id="cust-name" placeholder="ឈ្មោះអតិថិជន" required
-                                    class="oled-input w-full h-[48px] rounded-xl text-gray-900 dark:text-white font-bold text-lg text-left pl-4 outline-none relative z-20">
+                                <div class="relative z-20">
+                                    <input type="text" id="cust-name" placeholder="ឈ្មោះអតិថិជន" required
+                                        class="oled-input w-full h-[48px] rounded-xl text-gray-900 dark:text-white font-bold text-lg text-left pl-4 pr-10 outline-none">
+                                    <button type="button"
+                                        onclick="navigator.clipboard.readText().then(t => { document.getElementById('cust-name').value = t; ui.showToast('បាន Paste ឈ្មោះ'); }).catch(() => ui.showToast('សូមចុចជាប់ដើម្បី Paste'));"
+                                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-blue-500 active:scale-90 transition z-30">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
+                                </div>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <input type="tel" inputmode="numeric" id="cust-phone" placeholder="លេខទូរស័ព្ទ"
-                                        class="oled-input h-[44px] rounded-xl text-gray-800 dark:text-gray-200 text-sm text-left pl-4 outline-none relative z-20">
+                                    <div class="relative z-20">
+                                        <input type="tel" inputmode="numeric" id="cust-phone" placeholder="លេខទូរស័ព្ទ"
+                                            class="oled-input h-[44px] w-full rounded-xl text-gray-800 dark:text-gray-200 text-sm text-left pl-4 pr-10 outline-none">
+                                        <button type="button"
+                                            onclick="navigator.clipboard.readText().then(t => { document.getElementById('cust-phone').value = t; ui.showToast('បាន Paste លេខទូរស័ព្ទ'); }).catch(() => ui.showToast('សូមចុចជាប់ដើម្បី Paste'));"
+                                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-500 active:scale-90 transition z-30">
+                                            <i class="fas fa-paste"></i>
+                                        </button>
+                                    </div>
 
                                     <div class="relative z-20">
                                         <input type="text" id="cust-addr" placeholder="ទីតាំង"
-                                            class="oled-input h-[44px] w-full rounded-xl text-gray-800 dark:text-gray-200 text-sm text-left pl-4 pr-9 outline-none truncate">
+                                            class="oled-input h-[44px] w-full rounded-xl text-gray-800 dark:text-gray-200 text-sm text-left pl-4 pr-16 outline-none truncate">
+
+                                        <button type="button"
+                                            onclick="navigator.clipboard.readText().then(t => { document.getElementById('cust-addr').value = t; ui.showToast('បាន Paste ទីតាំង'); }).catch(() => ui.showToast('សូមចុចជាប់ដើម្បី Paste'));"
+                                            class="absolute inset-y-0 right-8 pr-2 flex items-center text-gray-400 hover:text-blue-500 active:scale-90 transition z-30">
+                                            <i class="fas fa-paste"></i>
+                                        </button>
+
                                         <button type="button" onclick="ui.openAddressModal()"
-                                            class="absolute right-1 top-1 bottom-1 w-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition">
+                                            class="absolute right-1 top-1 bottom-1 w-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition z-30">
                                             <i class="fas fa-expand-alt text-xs"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <div class="mt-3 relative z-20">
-                                    <div class="relative">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <i class="fab fa-facebook-messenger text-blue-500"></i>
-                                        </div>
-                                        <input type="text" id="cust-fb"
-                                            placeholder="ដាក់ Link Profile ភ្ញៀវ ឬ Username (FB)"
-                                            class="oled-input w-full h-[44px] rounded-xl text-gray-800 dark:text-gray-200 text-sm text-left pl-10 outline-none">
+                                <div class="relative z-20 mt-3">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fab fa-facebook-messenger text-blue-500"></i>
                                     </div>
-                                    <p class="text-[9px] text-gray-400 mt-1 pl-2">*
-                                        ជួយឱ្យងាយស្រួលឆាតទៅភ្ញៀវពេលឥវ៉ាន់មកដល់</p>
+                                    <input type="text" id="cust-fb"
+                                        placeholder="ដាក់ Link Profile ភ្ញៀវ ឬ Username (FB)"
+                                        class="oled-input w-full h-[44px] rounded-xl text-gray-800 dark:text-gray-200 text-sm text-left pl-10 pr-10 outline-none">
+                                    <button type="button"
+                                        onclick="navigator.clipboard.readText().then(t => { document.getElementById('cust-fb').value = t; ui.showToast('បាន Paste Link Facebook'); }).catch(() => ui.showToast('សូមចុចជាប់ដើម្បី Paste'));"
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-500 active:scale-90 transition z-30">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
                                 </div>
+                                <p class="text-[9px] text-gray-400 mt-1 pl-2">* ជួយឱ្យងាយស្រួលឆាតទៅភ្ញៀវពេលឥវ៉ាន់មកដល់
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -1698,10 +1740,10 @@
                         </div>
 
                         <div class="p-4 relative z-10">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 shadow-md shadow-purple-500/30 flex items-center justify-center text-white sticker-float"
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 shadow-md shadow-purple-500/30 flex items-center justify-center text-white sticker-float"
                                     style="animation-delay: 1s;">
-                                    <i class="fas fa-gift text-xs"></i>
+                                    <i class="fas fa-gift text-[10px]"></i>
                                 </div>
                                 <span
                                     class="text-xs font-extrabold text-purple-800 dark:text-purple-200 uppercase tracking-widest drop-shadow-sm">
@@ -1744,8 +1786,15 @@
                                     </div>
                                 </div>
 
-                                <input type="text" id="prod-name" placeholder="ឈ្មោះទំនិញ (Product Name)" required
-                                    class="oled-input w-full h-[48px] rounded-xl text-gray-900 dark:text-white font-bold text-lg text-left pl-4 outline-none relative z-20">
+                                <div class="relative z-20">
+                                    <input type="text" id="prod-name" placeholder="ឈ្មោះទំនិញ (Product Name)" required
+                                        class="oled-input w-full h-[48px] rounded-xl text-gray-900 dark:text-white font-bold text-lg text-left pl-4 pr-10 outline-none">
+                                    <button type="button"
+                                        onclick="navigator.clipboard.readText().then(t => { document.getElementById('prod-name').value = t; ui.showToast('បាន Paste ឈ្មោះទំនិញ'); }).catch(() => ui.showToast('សូមចុចជាប់ដើម្បី Paste'));"
+                                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-blue-500 active:scale-90 transition z-30">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
+                                </div>
 
                                 <div class="grid grid-cols-2 gap-3">
                                     <input type="text" id="prod-size" placeholder="Size"
@@ -1828,27 +1877,47 @@
                     </div>
 
                     <div class="relative pb-6">
-                        <select id="status"
-                            class="oled-input w-full h-[60px] px-5 rounded-[24px] text-base font-bold text-gray-800 dark:text-white outline-none cursor-pointer">
-                            <option value="pending">⏳ រង់ចាំ (Pending)</option>
-                            <option value="ordered">🛒 បានកុម្មង់ (Ordered)</option>
-                            <option value="shipping">🚚 កំពុងដឹក (Shipping)</option>
-                            <option value="completed">✅ ជោគជ័យ (Completed)</option>
-                            <option value="cancelled">❌ បោះបង់ (Cancelled)</option>
-                        </select>
+                        <input type="hidden" id="status" value="pending">
+
+                        <div id="formStatusBtn"
+                            class="oled-input w-full h-[60px] px-5 rounded-[24px] flex justify-between items-center cursor-pointer transition-all active:scale-95">
+                            <div class="flex items-center gap-3">
+                                <span id="formStatusIcon" class="text-xl">⏳</span>
+                                <span id="formStatusText"
+                                    class="text-base font-bold text-gray-800 dark:text-white">រង់ចាំ (Pending)</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
                     </div>
-                </form>
+                    <div id="status-log-wrapper"
+                        class="hidden rounded-[24px] overflow-hidden bg-white/50 dark:bg-slate-800/60 border border-white/60 dark:border-white/10 backdrop-blur-xl">
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div
+                                class="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-500 to-slate-700 shadow-md flex items-center justify-center text-white">
+                                <i class="fas fa-history text-[10px]"></i>
+                            </div>
+                            <span
+                                class="text-xs font-extrabold text-gray-600 dark:text-gray-300 uppercase tracking-widest">ប្រវត្តិស្ថានភាព
+                                (Status Log)</span>
+                        </div>
+                        <div id="status-log-container" class="space-y-0"></div>
+                    </div>
             </div>
 
-            <div class="absolute bottom-6 left-0 w-full flex justify-center z-30 pointer-events-none">
-                <button type="button" onclick="ui.saveOrder()"
-                    class="pointer-events-auto w-[85%] sm:w-[400px] h-[64px] rounded-[32px] bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white font-black text-xl shadow-[0_15px_35px_rgba(13,148,136,0.4)] dark:shadow-[0_15px_35px_rgba(45,212,191,0.2)] transition-all transform active:scale-[0.95] flex justify-center items-center gap-3 border-[4px] border-white/20 backdrop-blur-md ring-1 ring-white/30">
-                    <i class="fas fa-save text-2xl drop-shadow-md"></i> <span
-                        class="drop-shadow-sm tracking-wide">រក្សាទុក (SAVE)</span>
-                </button>
-            </div>
-
+            </form>
         </div>
+
+        <div class="absolute bottom-6 left-0 w-full flex justify-center z-30 pointer-events-none">
+            <button type="button" onclick="ui.saveOrder()"
+                class="pointer-events-auto w-[85%] sm:w-[400px] h-[64px] rounded-[32px] bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white font-black text-xl shadow-[0_15px_35px_rgba(13,148,136,0.4)] dark:shadow-[0_15px_35px_rgba(45,212,191,0.2)] transition-all transform active:scale-[0.95] flex justify-center items-center gap-3 border-[4px] border-white/20 backdrop-blur-md ring-1 ring-white/30">
+                <i class="fas fa-save text-2xl drop-shadow-md"></i> <span class="drop-shadow-sm tracking-wide">រក្សាទុក
+                    (SAVE)</span>
+            </button>
+        </div>
+
+    </div>
     </div>
     <div id="invoice-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden shadow-2xl animate-fade-in relative">
@@ -1959,7 +2028,7 @@
         let fpStart, fpEnd;
 
         const db = {
-            init: () => new Promise(r => { const q = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version); q.onupgradeneeded = e => { const d = e.target.result; if (!d.objectStoreNames.contains(DB_CONFIG.store)) d.createObjectStore(DB_CONFIG.store, { keyPath: 'id' }); if (!d.objectStoreNames.contains('logs')) d.createObjectStore('logs', { keyPath: 'id' }); }; q.onsuccess = e => { dbConn = e.target.result; r(); }; }),
+            init: () => new Promise(r => { const q = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version); q.onupgradeneeded = e => { const d = e.target.result; if (!d.objectStoreNames.contains(DB_CONFIG.store)) d.createObjectStore(DB_CONFIG.store, { keyPath: 'id' }); }; q.onsuccess = e => { dbConn = e.target.result; r(); }; }),
             getAll: (s = DB_CONFIG.store) => new Promise(r => { if (!dbConn) return r([]); const q = dbConn.transaction(s, 'readonly').objectStore(s).getAll(); q.onsuccess = () => r(q.result || []); }),
             put: (d, s = DB_CONFIG.store) => new Promise(r => { if (!dbConn) return; const q = dbConn.transaction(s, 'readwrite').objectStore(s).put(d); q.oncomplete = () => r(); }),
             delete: (id, s = DB_CONFIG.store) => new Promise(r => { if (!dbConn) return; const q = dbConn.transaction(s, 'readwrite').objectStore(s).delete(id); q.oncomplete = () => r(); }),
@@ -1968,13 +2037,13 @@
 
         const app = {
 
-            data: [], logs: [], filter: 'all', config: { sysRate: 4100, sysMode: 'manual', invRate: 4100 },
+            data: [], filter: 'all', config: { sysRate: 4100, sysMode: 'manual', invRate: 4100 },
             init: async () => {
                 await db.init();
                 const savedConfig = localStorage.getItem('shopConfig');
                 if (savedConfig) app.config = JSON.parse(savedConfig);
                 document.getElementById('app-loader').style.display = 'flex';
-                await app.refresh();
+                await app.refresh(true);
                 if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); document.getElementById('theme-icon').className = 'fas fa-sun text-yellow-300'; }
                 history.replaceState({ page: 'home' }, null, '');
                 window.onpopstate = ui.handleBack;
@@ -1986,12 +2055,12 @@
 
                 setTimeout(() => { document.getElementById('app-loader').style.opacity = '0'; setTimeout(() => document.getElementById('app-loader').style.display = 'none', 500); }, 800);
             },
-            refresh: async () => {
+            refresh: async (skipStats = false) => {
                 const all = await db.getAll();
-                app.data = all.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-                const logs = await db.getAll('logs');
-                app.logs = logs.sort((a, b) => b.id - a.id);
-                ui.renderHome(); ui.renderStats(); ui.renderHistory();
+                app.data = all.sort((a, b) => (b.id) - (a.id));
+                ui.renderHome();
+                if (!skipStats) ui.renderStats();
+                ui.renderHistory();
             },
             calc: (o) => {
                 // ការពារការបញ្ចូលលេខអវិជ្ជមាន (Logic Fix #3)
@@ -2013,12 +2082,6 @@
                 const exp = costBuy + cShip + cBoost; // រាប់បញ្ចូលថ្លៃដឹកចេញ និង Boost ជានិច្ចទោះ Cancel ក៏ដោយ
 
                 return { income: inc, expense: exp, profit: inc - exp, cogs: costBuy, shipExp: cShip, boost: cBoost, sale: sale, shipIn: shipIn };
-            },
-            logActivity: async (msg) => {
-                const log = { id: Date.now(), msg: msg, time: new Date().toLocaleTimeString('km-KH') };
-                await db.put(log, 'logs');
-                app.logs.unshift(log);
-                ui.renderHistory();
             },
             saveConfig: () => localStorage.setItem('shopConfig', JSON.stringify(app.config)),
             formatKHR: (usd, type = 'sys') => {
@@ -2248,6 +2311,7 @@
                 }
 
                 if (tabId === 'history') { if (typeof renderProfessionalHistory === 'function') renderProfessionalHistory(); }
+                if (tabId === 'settings') { ui.renderSettingsRate(); }
             },
 
             filterList: (f) => { app.filter = f; ui.renderHome(); },
@@ -2311,9 +2375,12 @@
                 } else if (type === 'margin') {
                     title.innerHTML = '<i class="fas fa-chart-pie text-purple-600 mr-2"></i> វិភាគ Margin %';
                     let tInc = 0, tCogs = 0, tExp = 0, nProf = 0;
-                    data.forEach(o => { const f = app.calc(o); tInc += (f.sale + f.shipIn); tCogs += f.cogs; tExp += (f.shipExp + f.boost); nProf += f.profit; });
-                    if (tInc === 0) tInc = 1;
-                    const pP = Math.round((nProf / tInc) * 100); const pC = Math.round((tCogs / tInc) * 100); const pE = Math.round((tExp / tInc) * 100);
+                    data.forEach(o => {
+                        if (o.status !== 'completed' && o.status !== 'cancelled') return;
+                        const f = app.calc(o); tInc += (f.sale + f.shipIn); tCogs += f.cogs; tExp += (f.shipExp + f.boost); nProf += f.profit;
+                    });
+                    if (tInc === 0) { content.innerHTML = '<div class="text-center text-gray-400 mt-10 p-4"><i class="fas fa-chart-pie text-4xl mb-3 opacity-30"></i><p>គ្មានចំណូលក្នុងរយៈពេលនេះ</p></div>'; return; }
+                    const pP = parseFloat(((nProf / tInc) * 100).toFixed(1)); const pC = parseFloat(((tCogs / tInc) * 100).toFixed(1)); const pE = parseFloat(((tExp / tInc) * 100).toFixed(1));
                     const chartStyle = `background: conic-gradient(#0d9488 0% ${pP}%, #ef4444 ${pP}% ${pP + pC}%, #f97316 ${pP + pC}% 100%);`;
                     content.innerHTML = `<div class="flex flex-col items-center justify-center pt-4"><div class="relative w-48 h-48 rounded-full shadow-inner mb-6" style="${chartStyle}"><div class="absolute inset-4 bg-white dark:bg-gray-800 rounded-full flex flex-col items-center justify-center shadow-lg"><span class="text-gray-400 text-xs uppercase font-bold">Margin</span><span class="text-4xl font-extrabold text-teal-600">${pP}%</span></div></div><div class="w-full bg-gray-50 dark:bg-gray-700/30 rounded-2xl p-4 space-y-3"><div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-teal-600"></div><span class="text-sm">ចំណេញ (Profit)</span></div><span class="font-bold text-teal-600">${pP}%</span></div><div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-red-500"></div><span class="text-sm">ថ្លៃដើម (COGS)</span></div><span class="font-bold text-red-500">${pC}%</span></div><div class="flex justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-orange-500"></div><span class="text-sm">ចំណាយ (Exp)</span></div><span class="font-bold text-orange-500">${pE}%</span></div></div></div>`;
                 }
@@ -2321,7 +2388,7 @@
 
             renderStats: () => {
                 let allTimeProfit = 0; let allTimeOrders = 0;
-                app.data.forEach(o => { if (!o.isDeleted && o.status === 'completed') { const f = app.calc(o); allTimeProfit += f.profit; allTimeOrders++; } });
+                app.data.forEach(o => { if (!o.isDeleted && (o.status === 'completed' || o.status === 'cancelled')) { const f = app.calc(o); allTimeProfit += f.profit; allTimeOrders += (o.status === 'completed' ? 1 : 0); } });
                 document.getElementById('lbl-lifetime-profit').innerText = `$${allTimeProfit.toFixed(2)}`;
                 document.getElementById('lbl-lifetime-orders').innerText = allTimeOrders;
 
@@ -2331,15 +2398,37 @@
 
                 data.forEach(o => {
                     const f = app.calc(o);
-                    totalInc += f.sale; shippingIn += f.shipIn; totalCogs += f.cogs; totalShip += f.shipExp; totalAds += f.boost; netProfit += f.profit;
-                    if (!prodMap[o.prodName]) prodMap[o.prodName] = 0; prodMap[o.prodName] += parseInt(o.prodQty);
+                    // ចំណូល → completed ប៉ុណ្ណោះ
+                    if (o.status === 'completed') {
+                        totalInc += f.sale;
+                        shippingIn += f.shipIn;
+                        totalCogs += f.cogs;
+                    }
+                    // ចំណាយ → completed + cancelled (ការខាតពិត)
+                    if (o.status === 'completed' || o.status === 'cancelled') {
+                        totalShip += f.shipExp;
+                        totalAds += f.boost;
+                    }
+                    // Top Products → completed ប៉ុណ្ណោះ
+                    if (o.status === 'completed') {
+                        if (!prodMap[o.prodName]) prodMap[o.prodName] = 0;
+                        prodMap[o.prodName] += parseInt(o.prodQty);
+                    }
                 });
 
-                const elCount = document.getElementById('rpt-order-count'); elCount.innerText = data.length;
+                const completedOrders = data.filter(o => o.status === 'completed');
+                const pendingOrders = data.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
+                let realProfit = 0, expectedProfit = 0;
+                completedOrders.forEach(o => { realProfit += app.calc(o).profit; });
+                pendingOrders.forEach(o => { expectedProfit += app.calc(o).profit; });
+
+                const elCount = document.getElementById('rpt-order-count'); elCount.innerText = completedOrders.length;
                 elCount.parentElement.onclick = () => ui.openDrillDown('orders');
                 elCount.parentElement.className = "report-item relative overflow-hidden bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 cursor-pointer active:scale-95 transition hover:shadow-lg";
 
-                const elProfit = document.getElementById('rpt-net-profit'); elProfit.innerText = `$${netProfit.toFixed(2)}`;
+                const elProfit = document.getElementById('rpt-net-profit'); elProfit.innerText = `$${realProfit.toFixed(2)}`;
+                const pendingEl = document.getElementById('rpt-pending-note');
+                if (pendingEl) pendingEl.innerHTML = pendingOrders.length > 0 ? `<span class="text-xs text-orange-500 font-bold mt-1 block">⏳ + $${expectedProfit.toFixed(2)} រំពឹងទុក (${pendingOrders.length})</span>` : '';
                 elProfit.parentElement.onclick = () => ui.openDrillDown('profit');
                 elProfit.parentElement.className = "report-item card-gradient-green relative overflow-hidden cursor-pointer active:scale-95 transition hover:shadow-lg";
 
@@ -2352,7 +2441,8 @@
                 document.getElementById('rpt-cogs-total').innerText = `$${totalCogs.toFixed(2)}`;
                 document.getElementById('rpt-ship-exp').innerText = `$${totalShip.toFixed(2)}`;
                 document.getElementById('rpt-ads-total').innerText = `$${totalAds.toFixed(2)}`;
-                const margin = (totalInc > 0) ? ((netProfit / (totalInc + shippingIn)) * 100) : 0;
+                netProfit = (totalInc + shippingIn) - totalCogs - totalShip - totalAds;
+                const margin = ((totalInc + shippingIn) > 0) ? ((netProfit / (totalInc + shippingIn)) * 100) : 0;
                 document.getElementById('rpt-margin').innerText = `${margin.toFixed(1)}%`;
 
                 const sortedProds = Object.entries(prodMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -2378,7 +2468,13 @@
                 const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; const genDate = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
                 let tSale = 0, tExp = 0, tProf = 0, tQty = 0; let tableRows = '';
                 data.forEach(o => {
-                    const f = app.calc(o); tSale += f.income; tExp += f.expense; tProf += f.profit; tQty += parseInt(o.prodQty);
+                    const f = app.calc(o);
+                    if (o.status === 'completed' || o.status === 'cancelled') {
+                        tSale += f.income; tExp += f.expense; tProf += f.profit;
+                        tQty += parseInt(o.prodQty);
+                    } else {
+                        return; // ❌ Pending/Shipping → Skip ចេញពី Table ផង
+                    }
                     const profitClass = f.profit >= 0 ? 'print-text-teal' : 'print-text-red';
                     let statusBadge = '';
                     if (o.status === 'pending') statusBadge = '<span style="font-size:8px; padding:2px 4px; background:#fff7ed; color:#c2410c; border-radius:3px; border:1px solid #ffedd5;">PENDING</span>';
@@ -2395,38 +2491,59 @@
             },
 
             shareReportText: () => {
-                const elProfit = document.getElementById('rpt-net-profit'); elProfit.innerHTML = `$${netProfit.toFixed(2)} ${app.formatKHR(netProfit)}`; const o = document.getElementById('rpt-order-count').innerText; const s = document.getElementById('rpt-total-income').innerHTML = `$${totalInc.toFixed(2)} ${app.formatKHR(totalInc)}`;
-                const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value;
-                const text = `📊 របាយការណ៍សង្ខេប (${start} - ${end})\n------------------------\n💰 ចំណេញសុទ្ធ: ${p}\n📦 ចំនួនលក់: ${o}\n💵 ចំណូលសរុប: ${s}\n------------------------\nបង្កើតដោយ: My Small Shop App`;
-                navigator.clipboard.writeText(text); ui.showToast("📋 បានចម្លងអក្សររបាយការណ៍!");
+                const start = document.getElementById('date-start').value;
+                const end = document.getElementById('date-end').value;
+                const profit = document.getElementById('rpt-net-profit').innerText;
+                const orders = document.getElementById('rpt-order-count').innerText;
+                const income = document.getElementById('rpt-total-income').innerText;
+                const margin = document.getElementById('rpt-margin').innerText;
+                const text = `📊 របាយការណ៍សង្ខេប (${start} - ${end})\n------------------------\n💰 ចំណេញសុទ្ធ: ${profit}\n📦 ចំនួនលក់: ${orders}\n💵 ចំណូលសរុប: ${income}\n📈 Margin: ${margin}\n------------------------\nបង្កើតដោយ: My Small Shop App`;
+                navigator.clipboard.writeText(text);
+                ui.showToast("📋 បានចម្លងអក្សររបាយការណ៍!");
             },
 
             renderHome: () => {
                 const container = document.getElementById('order-list'); const search = document.getElementById('search-input').value.toLowerCase(); container.innerHTML = '';
                 let activeData = app.data.filter(o => !o.isDeleted);
+
+                // === [ចាប់ផ្ដើមកូដបន្ថែមថ្មី៖ គណនាចំណេញជាក់ស្ដែង និងរំពឹងទុក] ===
+                let realProfit = 0;
+                let pendingProfit = 0;
+                activeData.forEach(o => {
+                    const f = app.calc(o);
+                    if (o.status === 'completed') {
+                        realProfit += f.profit;
+                    } else if (o.status !== 'cancelled') {
+                        pendingProfit += f.profit;
+                    }
+                });
+
+                const dashReal = document.getElementById('dash-real-profit');
+                const dashPending = document.getElementById('dash-pending-profit');
+                if (dashReal) dashReal.innerText = `$${realProfit.toFixed(2)}`;
+                if (dashPending) dashPending.innerText = `$${pendingProfit.toFixed(2)}`;
+                // === [បញ្ចប់កូដបន្ថែមថ្មី] ===
                 // Logic ស្វែងរក (ដាក់នៅផ្នែកខាងលើនៃ ui.renderHome)
-                if (search) activeData = activeData.filter(o =>
-                    o.custName.toLowerCase().includes(search) ||
-                    o.custPhone.includes(search) ||
-                    o.prodName.toLowerCase().includes(search) ||
-                    // បន្ថែមបន្ទាត់ខាងក្រោមនេះ ដើម្បីឱ្យវាស្គាល់លេខ Tracking
-                    (o.trackingNo && o.trackingNo.toString().toLowerCase().includes(search))
-                );
-                let realP = 0, pendP = 0;
-                app.data.filter(o => !o.isDeleted).forEach(o => { const f = app.calc(o); if (o.status === 'completed') realP += f.profit; else if (o.status !== 'cancelled') pendP += f.profit; });
-                document.getElementById('dash-real-profit').innerHTML = `$${realP.toFixed(2)} ${app.formatKHR(realP)}`; document.getElementById('dash-pending-profit').innerHTML = `$${pendP.toFixed(2)} ${app.formatKHR(pendP)}`;
-                if (activeData.length === 0) { container.innerHTML = `<div class="text-center mt-20 opacity-40"><i class="fas fa-box-open text-5xl mb-3 text-gray-300 dark:text-gray-600"></i><p class="text-sm text-gray-400 dark:text-gray-500">មិនមានទិន្ន័យ</p></div>`; return; }
+                // [START] Logic ច្រោះទិន្នន័យ (Search + Status Filter ធ្វើការព្រមគ្នា)
+                // [START] Logic ច្រោះទិន្នន័យ (Search + Status Filter ធ្វើការព្រមគ្នា)
+                const currentStatus = app.filter || 'all'; // ទាញយក Status ពីប្រព័ន្ធដែលបានរើស
 
-                // [START] កូដបង្ហាញកាតថ្មី (Tracking & Image Search)
+                activeData = activeData.filter(o => {
+                    // ១. ឆែកលក្ខខណ្ឌ Search
+                    const matchSearch = !search ||
+                        (o.custName && o.custName.toLowerCase().includes(search)) ||
+                        (o.custPhone && o.custPhone.includes(search)) ||
+                        (o.prodName && o.prodName.toLowerCase().includes(search)) ||
+                        (o.trackingNo && o.trackingNo.toString().toLowerCase().includes(search));
 
-                // 1. Logic ស្វែងរក (Search Logic) - ដាក់ជំនួស Logic Search ចាស់
-                if (search) activeData = activeData.filter(o =>
-                    o.custName.toLowerCase().includes(search) ||
-                    o.custPhone.includes(search) ||
-                    o.prodName.toLowerCase().includes(search) ||
-                    (o.trackingNo && o.trackingNo.toLowerCase().includes(search)) // ស្វែងរកតាម Tracking
-                );
+                    // ២. ឆែកលក្ខខណ្ឌ Status
+                    const matchStatus = (currentStatus === 'all') || (o.status === currentStatus);
 
+                    // ត្រូវតែត្រូវទាំង ២ លក្ខខណ្ឌ ទើបយកមកបង្ហាញ
+                    return matchSearch && matchStatus;
+                });
+                // [END] បញ្ចប់កែប្រែ
+                // [END] បញ្ចប់កែប្រែ
                 // 2. ការបង្កើតកាត
                 if (activeData.length === 0) { container.innerHTML = `<div class="text-center mt-20 opacity-40"><i class="fas fa-box-open text-5xl mb-3 text-gray-300 dark:text-gray-600"></i><p class="text-sm text-gray-400 dark:text-gray-500">មិនមានទិន្ន័យ</p></div>`; return; }
 
@@ -2497,7 +2614,10 @@
                 <div class="p-5 pl-6">
                     <div class="flex justify-between items-center mb-3">
                         <span class="status-badge ${st.bg} ${st.text}"><i class="fas ${st.icon}"></i> ${st.label}</span>
-                        <span class="text-[11px] text-gray-400 dark:text-gray-500 font-bold font-sans tracking-wide">${new Date(o.updatedAt).toLocaleDateString('km-KH')}</span>
+                        <div class="flex flex-col items-end gap-0.5">
+                        <span class="text-[11px] text-gray-400 dark:text-gray-500 font-bold font-sans">${new Date(o.createdAt || o.id).toLocaleDateString('km-KH')}</span>
+                        ${o.updatedAt && new Date(o.updatedAt).toDateString() !== new Date(o.createdAt || o.id).toDateString() ? `<span class="text-[9px] text-blue-400 font-sans">Updated: ${new Date(o.updatedAt).toLocaleDateString('km-KH')}</span>` : ''}
+                    </div>
                     </div>
                     
                     <div class="mb-3 pb-3 border-b border-gray-100 dark:border-gray-700/50">
@@ -2506,9 +2626,7 @@
                             <a href="tel:${o.custPhone}" onclick="event.stopPropagation();" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 transition group-phone">
                                 <i class="fas fa-phone-alt text-[10px]"></i> <span class="text-xs font-bold font-mono">${o.custPhone || 'N/A'}</span>
                             </a>
-                            <div onclick="event.stopPropagation(); ui.quickViewAddress('${o.custAddr ? o.custAddr.replace(/'/g, "\\'") : ''}')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 hover:bg-rose-100 transition cursor-pointer max-w-[150px]">
-                                <i class="fas fa-map-marker-alt text-[10px]"></i> <span class="text-xs font-medium truncate">${o.custAddr || 'N/A'}</span>
-                            </div>
+                            <div class="flex items-center gap-1">${(() => { const _url = o.custAddr ? o.custAddr.match(/(https?:\/\/[^\s]+)/) : null; const _txt = o.custAddr ? (o.custAddr.replace(/(https?:\/\/[^\s]+)/g, '').trim() || 'មើលផែនទី') : 'N/A'; return `<div onclick="event.stopPropagation(); ui.quickViewAddress('${o.custAddr ? o.custAddr.replace(/'/g, "\\'") : ''}')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 hover:bg-rose-100 transition cursor-pointer max-w-[130px]"><i class="fas fa-map-marker-alt text-[10px]"></i><span class="text-xs font-medium truncate">${_txt}</span></div>${_url ? `<a href="${_url[0]}" target="_blank" onclick="event.stopPropagation();" class="flex-shrink-0 w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center justify-center hover:bg-blue-500 hover:text-white transition ml-1" title="បើ Google Maps"><i class="fas fa-directions text-xs"></i></a>` : ''}`; })()}</div>
                         </div>
                     </div>
 
@@ -2562,6 +2680,8 @@
                 // ២. កំណត់តម្លៃលំនាំដើម (សម្រាប់បង្កើតថ្មី - Create Mode)
                 document.getElementById('status').value = 'pending';
                 document.getElementById('entry-id').value = '';
+                document.getElementById('formStatusIcon').innerText = '⏳';
+                document.getElementById('formStatusText').innerText = 'រង់ចាំ (Pending)';
 
                 // 🔥 កំណត់អក្សរសម្រាប់ "បង្កើតថ្មី"
                 if (modalTitle) modalTitle.innerText = "ការលក់ថ្មី";
@@ -2570,6 +2690,9 @@
                 // លាក់ប៊ូតុង Invoice
                 document.getElementById('invoice-btn-group').classList.add('hidden');
                 document.getElementById('invoice-btn-group').classList.remove('flex');
+                // លាក់ Status Log ពេល Create Mode
+                const logWrap = document.getElementById('status-log-wrapper');
+                if (logWrap) logWrap.classList.add('hidden');
 
                 // សម្អាតទិន្នន័យចាស់ក្នុង Form
                 ['cust-name', 'cust-phone', 'cust-addr', 'cust-fb', 'track-no', 'prod-img', 'prod-name', 'prod-size', 'val-sale', 'val-ship-in', 'cost-buy', 'cost-ship', 'cost-boost', 'note'].forEach(i => document.getElementById(i).value = '');
@@ -2602,12 +2725,127 @@
                         document.getElementById('cost-ship').value = o.costShip;
                         document.getElementById('cost-boost').value = o.costBoost;
                         document.getElementById('note').value = o.note || '';
+                        const sMap = {
+                            'pending': { icon: '⏳', text: 'រង់ចាំ (Pending)' },
+                            'ordered': { icon: '🛒', text: 'បានកុម្មង់ (Ordered)' },
+                            'shipping': { icon: '🚚', text: 'កំពុងដឹក (Shipping)' },
+                            'completed': { icon: '✅', text: 'ជោគជ័យ (Completed)' },
+                            'cancelled': { icon: '❌', text: 'បោះបង់ (Cancelled)' }
+                        };
+                        const curS = sMap[o.status] || sMap['pending'];
                         document.getElementById('status').value = o.status;
+                        document.getElementById('formStatusIcon').innerText = curS.icon;
+                        document.getElementById('formStatusText').innerText = curS.text;
                         document.getElementById('inv-rate-input').value = o.exchangeRate || app.config.invRate;
 
                         // បង្ហាញប៊ូតុង Invoice ពេលកែប្រែ
                         document.getElementById('invoice-btn-group').classList.remove('hidden');
                         document.getElementById('invoice-btn-group').classList.add('flex');
+
+                        // *** Render Status Log ***
+                        const logWrapper = document.getElementById('status-log-wrapper');
+                        const logContainer = document.getElementById('status-log-container');
+                        const sLabels = {
+                            'pending': { icon: '⏳', text: 'រង់ចាំ (Pending)', badge: 'bg-orange-50  dark:bg-orange-900/30  text-orange-600  dark:text-orange-400  border-orange-200  dark:border-orange-700/50' },
+                            'ordered': { icon: '🛒', text: 'បានកុម្មង់ (Ordered)', badge: 'bg-blue-50    dark:bg-blue-900/30    text-blue-600    dark:text-blue-400    border-blue-200    dark:border-blue-700/50' },
+                            'shipping': { icon: '🚚', text: 'កំពុងដឹក (Shipping)', badge: 'bg-indigo-50  dark:bg-indigo-900/30  text-indigo-600  dark:text-indigo-400  border-indigo-200  dark:border-indigo-700/50' },
+                            'completed': { icon: '✅', text: 'ជោគជ័យ (Completed)', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700/50' },
+                            'cancelled': { icon: '❌', text: 'បោះបង់ (Cancelled)', badge: 'bg-red-50     dark:bg-red-900/30     text-red-600     dark:text-red-400     border-red-200     dark:border-red-700/50' }
+                        };
+                        const log = o.statusLog || [];
+                        if (log.length > 0 && logWrapper && logContainer) {
+                            // តម្រៀបពី Pending→Completed (ចាស់ → ថ្មី)
+                            const sortedLog = [...log].sort((a, b) => new Date(a.time) - new Date(b.time));
+
+                            // Function: Build HTML សម្រាប់ Log entries
+                            const buildLogHTML = (entries, allEntries) => {
+                                const sL = sLabels;
+                                let h = '';
+                                entries.forEach((entry, i) => {
+                                    const s = sL[entry.status] || { icon: '•', text: entry.status, badge: 'bg-gray-50 text-gray-600 border-gray-200' };
+                                    const t = new Date(entry.time);
+                                    const dateStr = t.toLocaleDateString('km-KH');
+                                    const timeStr = t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                                    const isLast = i === entries.length - 1;
+                                    h += `<div class="flex gap-3 items-start"><div class="flex flex-col items-center flex-shrink-0"><div class="w-8 h-8 rounded-full ${s.badge} border flex items-center justify-center text-sm shadow-sm">${s.icon}</div>${!isLast ? `<div class="w-0.5 min-h-[24px] bg-gradient-to-b from-gray-300 to-gray-100 dark:from-gray-600 dark:to-gray-800 mt-1"></div>` : ''}</div><div class="${!isLast ? 'pb-4' : ''} flex-1 pt-1"><div class="flex justify-between items-center flex-wrap gap-1"><span class="text-sm font-bold text-gray-700 dark:text-gray-200">${s.text}</span><span class="text-[10px] text-gray-400 font-mono bg-white/60 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-100 dark:border-gray-700">${dateStr} · ${timeStr}</span></div></div></div>`;
+                                });
+                                return h;
+                            };
+
+                            const needCollapse = sortedLog.length > 3;
+                            const collapsed = sortedLog.slice(-3);
+                            const hiddenCount = sortedLog.length - 3;
+
+                            const renderLog = (expanded) => {
+                                const entries = expanded ? sortedLog : collapsed;
+                                let html = '';
+                                // ปุ่ม Toggle
+                                if (needCollapse) {
+                                    if (!expanded) {
+                                        html += `<button onclick="(function(btn){const lc=btn.closest('[id=\\'status-log-container\\']')||btn.parentElement; renderStatusLogToggle(lc, true);})(this)" class="w-full text-[11px] text-teal-600 dark:text-teal-400 font-bold text-center py-2 mb-3 bg-teal-50/80 dark:bg-teal-900/20 rounded-xl border border-teal-100 dark:border-teal-800 flex items-center justify-center gap-1.5 hover:bg-teal-100 dark:hover:bg-teal-900/40 transition active:scale-95"><i class="fas fa-chevron-up text-[9px]"></i> មើលទាំងអស់ (${sortedLog.length}) <i class="fas fa-chevron-up text-[9px]"></i></button>`;
+                                    } else {
+                                        html += `<button onclick="(function(btn){const lc=btn.closest('[id=\\'status-log-container\\']')||btn.parentElement; renderStatusLogToggle(lc, false);})(this)" class="w-full text-[11px] text-gray-400 font-bold text-center py-2 mb-3 bg-gray-50/80 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-100 transition active:scale-95"><i class="fas fa-chevron-down text-[9px]"></i> បង្រួម (Collapse) <i class="fas fa-chevron-down text-[9px]"></i></button>`;
+                                    }
+                                }
+                                html += buildLogHTML(entries, sortedLog);
+                                return html;
+                            };
+
+                            // Store data on container for toggle
+                            logContainer._sortedLog = sortedLog;
+                            logContainer._sLabels = sLabels;
+                            logContainer._buildLogHTML = buildLogHTML;
+
+                            window.renderStatusLogToggle = (container, expanded) => {
+                                const sl = container._sortedLog;
+                                const needC = sl.length > 3;
+                                const col = sl.slice(-3);
+                                const entries = expanded ? sl : col;
+                                const sL = {
+                                    'pending': { icon: '⏳', text: 'រង់ចាំ (Pending)', badge: 'bg-orange-50  dark:bg-orange-900/30  text-orange-600  dark:text-orange-400  border-orange-200  dark:border-orange-700/50' },
+                                    'ordered': { icon: '🛒', text: 'បានកុម្មង់ (Ordered)', badge: 'bg-blue-50    dark:bg-blue-900/30    text-blue-600    dark:text-blue-400    border-blue-200    dark:border-blue-700/50' },
+                                    'shipping': { icon: '🚚', text: 'កំពុងដឹក (Shipping)', badge: 'bg-indigo-50  dark:bg-indigo-900/30  text-indigo-600  dark:text-indigo-400  border-indigo-200  dark:border-indigo-700/50' },
+                                    'completed': { icon: '✅', text: 'ជោគជ័យ (Completed)', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700/50' },
+                                    'cancelled': { icon: '❌', text: 'បោះបង់ (Cancelled)', badge: 'bg-red-50     dark:bg-red-900/30     text-red-600     dark:text-red-400     border-red-200     dark:border-red-700/50' }
+                                };
+                                let html = '';
+                                if (needC) {
+                                    if (!expanded) {
+                                        html += `<button onclick="(function(btn){const lc=document.getElementById('status-log-container'); renderStatusLogToggle(lc, true);})(this)" class="w-full text-[11px] text-teal-600 dark:text-teal-400 font-bold text-center py-2 mb-3 bg-teal-50/80 dark:bg-teal-900/20 rounded-xl border border-teal-100 dark:border-teal-800 flex items-center justify-center gap-1.5 hover:bg-teal-100 dark:hover:bg-teal-900/40 transition active:scale-95"><i class="fas fa-chevron-up text-[9px]"></i> មើលទាំងអស់ (${sl.length}) <i class="fas fa-chevron-up text-[9px]"></i></button>`;
+                                    } else {
+                                        html += `<button onclick="(function(btn){const lc=document.getElementById('status-log-container'); renderStatusLogToggle(lc, false);})(this)" class="w-full text-[11px] text-gray-400 font-bold text-center py-2 mb-3 bg-gray-50/80 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-100 transition active:scale-95"><i class="fas fa-chevron-down text-[9px]"></i> បង្រួម (Collapse) <i class="fas fa-chevron-down text-[9px]"></i></button>`;
+                                    }
+                                }
+                                entries.forEach((entry, i) => {
+                                    const s = sL[entry.status] || { icon: '•', text: entry.status, badge: 'bg-gray-50 text-gray-600 border-gray-200' };
+                                    const t = new Date(entry.time);
+                                    const dateStr = t.toLocaleDateString('km-KH');
+                                    const timeStr = t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                                    const isLast = i === entries.length - 1;
+                                    html += `<div class="flex gap-3 items-start"><div class="flex flex-col items-center flex-shrink-0"><div class="w-8 h-8 rounded-full ${s.badge} border flex items-center justify-center text-sm shadow-sm">${s.icon}</div>${!isLast ? `<div class="w-0.5 min-h-[24px] bg-gradient-to-b from-gray-300 to-gray-100 dark:from-gray-600 dark:to-gray-800 mt-1"></div>` : ''}</div><div class="${!isLast ? 'pb-4' : ''} flex-1 pt-1"><div class="flex justify-between items-center flex-wrap gap-1"><span class="text-sm font-bold text-gray-700 dark:text-gray-200">${s.text}</span><span class="text-[10px] text-gray-400 font-mono bg-white/60 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-100 dark:border-gray-700">${dateStr} · ${timeStr}</span></div></div></div>`;
+                                });
+                                container.innerHTML = html;
+                            };
+
+                            logContainer.innerHTML = renderLog(false);
+                            logWrapper.classList.remove('hidden');
+
+                            // Build full HTML for expand
+                            let fullHtml = '';
+                            sortedLog.forEach((entry, i) => {
+                                const s = sLabels[entry.status] || { icon: '•', text: entry.status, badge: 'bg-gray-50 text-gray-600 border-gray-200' };
+                                const t = new Date(entry.time);
+                                const dateStr = t.toLocaleDateString('km-KH');
+                                const timeStr = t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                                const isLast = i === sortedLog.length - 1;
+                                fullHtml += `<div class="flex gap-3 items-start"><div class="flex flex-col items-center flex-shrink-0"><div class="w-8 h-8 rounded-full ${s.badge} border flex items-center justify-center text-sm shadow-sm">${s.icon}</div>${!isLast ? `<div class="w-0.5 min-h-[24px] bg-gradient-to-b from-gray-300 to-gray-100 dark:from-gray-600 dark:to-gray-800 mt-1"></div>` : ''}</div><div class="${!isLast ? 'pb-4' : ''} flex-1 pt-1"><div class="flex justify-between items-center flex-wrap gap-1"><span class="text-sm font-bold text-gray-700 dark:text-gray-200">${s.text}</span><span class="text-[10px] text-gray-400 font-mono bg-white/60 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-100 dark:border-gray-700">${dateStr} · ${timeStr}</span></div></div></div>`;
+                            });
+                            logContainer.setAttribute('data-full', fullHtml);
+                            logContainer.innerHTML = html;
+                            logWrapper.classList.remove('hidden');
+                        } else if (logWrapper) {
+                            logWrapper.classList.add('hidden');
+                        }
                     }
                 }
             },
@@ -2615,30 +2853,90 @@
 
             saveOrder: async () => {
                 try {
-                    const idStr = document.getElementById('entry-id').value; const custName = document.getElementById('cust-name').value; const prodName = document.getElementById('prod-name').value;
-                    if (!custName || !prodName) { alert("សូមបញ្ចូលឈ្មោះអតិថិជន និងឈ្មោះទំនិញ!"); return; }
-                    const curRate = parseInt(document.getElementById('inv-rate-input').value) || 4100; app.config.invRate = curRate; app.saveConfig();
+                    const idStr = document.getElementById('entry-id').value;
+                    const custName = document.getElementById('cust-name').value;
+                    const prodName = document.getElementById('prod-name').value;
+
+                    if (!custName || !prodName) {
+                        alert("សូមបញ្ចូលឈ្មោះអតិថិជន និងឈ្មោះទំនិញ!");
+                        return;
+                    }
+
+                    const curRate = parseInt(document.getElementById('inv-rate-input').value) || 4100;
+                    app.config.invRate = curRate;
+                    app.saveConfig();
+
+                    // === [ចំណុចកែប្រែសំខាន់] ===
+                    // រក្សាទុកកាលបរិច្ឆេទចាស់ប្រសិនបើវាជាការកែប្រែទិន្នន័យ (Edit)
+                    const now = new Date().toISOString();
+                    let createdAt = now;
+                    let statusLog = [];
+                    const newStatus = document.getElementById('status').value;
+
+                    if (idStr) {
+                        const existingOrder = app.data.find(x => x.id === parseInt(idStr));
+                        if (existingOrder) {
+                            // createdAt មិនផ្លាស់ប្ដូរ — ប្រើ id ជា fallback សម្រាប់ Order ចាស់
+                            createdAt = existingOrder.createdAt || new Date(existingOrder.id).toISOString();
+                            statusLog = Array.isArray(existingOrder.statusLog) ? [...existingOrder.statusLog] : [];
+                            // បន្ថែម Log តែ ពេល Status ផ្លាស់ប្ដូរ
+                            const lastLogStatus = statusLog.length > 0 ? statusLog[statusLog.length - 1].status : null;
+                            if (newStatus !== lastLogStatus) {
+                                statusLog.push({ status: newStatus, time: now });
+                            }
+                        }
+                    } else {
+                        // Order ថ្មី — Log ដំបូង
+                        statusLog = [{ status: newStatus, time: now }];
+                    }
+
                     const payload = {
-                        id: idStr ? parseInt(idStr) : Date.now(), updatedAt: new Date().toISOString(), exchangeRate: curRate,
-                        // [START] បន្ថែមថ្មី
+                        id: idStr ? parseInt(idStr) : Date.now(),
+                        createdAt: createdAt,
+                        updatedAt: now,
+                        exchangeRate: curRate,
                         trackingNo: document.getElementById('track-no').value,
                         prodImg: document.getElementById('prod-img').value,
-                        // [END]
-                        fbLink: document.getElementById('cust-fb').value, // <--- ដាក់បន្ទាត់នេះចូល
-                        custName: custName, custPhone: document.getElementById('cust-phone').value, custAddr: document.getElementById('cust-addr').value,
-                        prodName: prodName, prodSize: document.getElementById('prod-size').value, prodQty: document.getElementById('prod-qty').value,
-                        valSale: document.getElementById('val-sale').value, valShipIn: document.getElementById('val-ship-in').value,
-                        costBuy: document.getElementById('cost-buy').value, costShip: document.getElementById('cost-ship').value, costBoost: document.getElementById('cost-boost').value,
-                        note: document.getElementById('note').value, status: document.getElementById('status').value, isDeleted: false
+                        fbLink: document.getElementById('cust-fb').value,
+                        custName: custName,
+                        custPhone: document.getElementById('cust-phone').value,
+                        custAddr: document.getElementById('cust-addr').value,
+                        prodName: prodName,
+                        prodSize: document.getElementById('prod-size').value,
+                        // បំប្លែងចំនួនទំនិញជាលេខជានិច្ច ដើម្បីការពារ Error ពេលបូករបាយការណ៍
+                        prodQty: parseInt(document.getElementById('prod-qty').value) || 1,
+                        valSale: document.getElementById('val-sale').value,
+                        valShipIn: document.getElementById('val-ship-in').value,
+                        costBuy: document.getElementById('cost-buy').value,
+                        costShip: document.getElementById('cost-ship').value,
+                        costBoost: document.getElementById('cost-boost').value,
+                        note: document.getElementById('note').value,
+                        status: document.getElementById('status').value,
+                        statusLog: statusLog,
+                        statusLog: statusLog,
+                        isDeleted: false
                     };
 
                     const existingIdx = app.data.findIndex(x => x.id === payload.id);
-                    if (existingIdx > -1) { app.data[existingIdx] = payload; } else { app.data.unshift(payload); }
+                    if (existingIdx > -1) {
+                        app.data[existingIdx] = payload;
+                    } else {
+                        app.data.unshift(payload);
+                    }
+
                     app.data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
-                    ui.renderHome(); ui.renderStats(); ui.closeModal('modal-order'); ui.showToast('✅ រក្សាទុកជោគជ័យ');
-                    await db.put(payload); if (!idStr) await app.logActivity(`បានបង្កើត: ${payload.prodName}`);
-                } catch (e) { alert("Error: " + e); }
+                    ui.renderHome();
+                    ui.renderStats();
+                    ui.renderHistory();
+                    ui.closeModal('modal-order');
+                    ui.showToast('✅ រក្សាទុកជោគជ័យ');
+
+                    await db.put(payload);
+
+                } catch (e) {
+                    alert("Error: " + e);
+                }
             },
 
             confirmType: null, confirmId: null,
@@ -2657,10 +2955,10 @@
             closeConfirm: () => { ui.confirmType = null; ui.confirmId = null; document.getElementById('modal-confirm-overlay').classList.add('hidden'); },
             onConfirmYes: async () => {
                 const type = ui.confirmType; const id = ui.confirmId; ui.closeConfirm();
-                if (type === 'delete' && id) { const item = app.data.find(x => x.id === id); if (item) { item.isDeleted = true; ui.renderHome(); ui.showToast('🗑️ បានលុបទៅធុងសំរាម'); await db.put(item); await app.logActivity(`បានលុប: ${item.prodName}`); ui.closeModal('modal-order'); } }
-                else if (type === 'restore' && id) { const item = app.data.find(x => x.id === id); if (item) { item.isDeleted = false; ui.renderTrashList(); ui.renderHome(); ui.renderStats(); ui.showToast('♻️ បានយកមកវិញ'); await db.put(item); await app.logActivity(`បាន Restore: ${item.prodName}`); } }
-                else if (type === 'empty_trash') { const trash = app.data.filter(x => x.isDeleted); app.data = app.data.filter(x => !x.isDeleted); ui.renderTrashList(); ui.showToast('🧹 សម្អាតធុងសំរាមរួចរាល់!'); for (let t of trash) { await db.delete(t.id); } await app.logActivity('បានសម្អាតធុងសំរាម'); }
-                else if (type === 'reset_app') { document.getElementById('app-loader').style.display = 'flex'; document.getElementById('loader-text').innerText = "កំពុងលុបចោលទិន្ន័យ..."; await db.clear(); await db.clear('logs'); localStorage.clear(); setTimeout(() => { location.reload(); }, 1500); }
+                if (type === 'delete' && id) { const item = app.data.find(x => x.id === id); if (item) { item.isDeleted = true; ui.renderHome(); ui.showToast('🗑️ បានលុបទៅធុងសំរាម'); await db.put(item); ui.closeModal('modal-order'); } }
+                else if (type === 'restore' && id) { const item = app.data.find(x => x.id === id); if (item) { item.isDeleted = false; ui.renderTrashList(); ui.renderHome(); ui.renderStats(); ui.showToast('♻️ បានយកមកវិញ'); await db.put(item); } }
+                else if (type === 'empty_trash') { const trash = app.data.filter(x => x.isDeleted); app.data = app.data.filter(x => !x.isDeleted); ui.renderTrashList(); ui.showToast('🧹 សម្អាតធុងសំរាមរួចរាល់!'); for (let t of trash) { await db.delete(t.id); } }
+                else if (type === 'reset_app') { document.getElementById('app-loader').style.display = 'flex'; document.getElementById('loader-text').innerText = "កំពុងលុបចោលទិន្ន័យ..."; await db.clear(); localStorage.clear(); setTimeout(() => { location.reload(); }, 1500); }
             },
 
             confirmDelete: (id) => ui.askConfirm('delete', id),
@@ -2684,7 +2982,60 @@
                 viewer.innerHTML = html; document.getElementById('invoice-modal').classList.remove('hidden');
             },
 
-            shareTextOrder: async () => { const cName = document.getElementById('cust-name').value; const cPhone = document.getElementById('cust-phone').value; const cAddr = document.getElementById('cust-addr').value; const pName = document.getElementById('prod-name').value; const pSize = document.getElementById('prod-size').value; const pQty = document.getElementById('prod-qty').value; const vSale = parseFloat(document.getElementById('val-sale').value) || 0; const vShip = parseFloat(document.getElementById('val-ship-in').value) || 0; const total = vSale + vShip; const text = `📦 វិក្កយបត្រ / ORDER DETAIL\n------------------------\n👤 អតិថិជន: ${cName}\n📞 ទូរស័ព្ទ: ${cPhone}\n📍 ទីតាំង: ${cAddr}\n------------------------\n🛍️ ទំនិញ: ${pName} ${pSize ? '(' + pSize + ')' : ''}\n🔢 ចំនួន: ${pQty}\n------------------------\n💰 តម្លៃទំនិញ: $${vSale.toFixed(2)}\n🚚 ថ្លៃដឹក: $${vShip.toFixed(2)}\n💵 សរុប: $${total.toFixed(2)}\n------------------------\nអរគុណ! Thank you! 🙏`; if (navigator.share) { try { await navigator.share({ title: 'Order Details', text: text }); } catch (e) { } } else { navigator.clipboard.writeText(text); ui.showToast("📋 បានចម្លងអក្សរវិក្កយបត្រ!"); } },
+            shareTextOrder: async () => {
+                const cName = document.getElementById('cust-name').value;
+                const cPhone = document.getElementById('cust-phone').value;
+                const cAddr = document.getElementById('cust-addr').value;
+                const pName = document.getElementById('prod-name').value;
+                const pSize = document.getElementById('prod-size').value;
+                const pQty = document.getElementById('prod-qty').value;
+                const trackNo = document.getElementById('track-no').value;
+                const vSale = parseFloat(document.getElementById('val-sale').value) || 0;
+                const vShip = parseFloat(document.getElementById('val-ship-in').value) || 0;
+                const total = vSale + vShip;
+                const status = document.getElementById('status').value;
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('km-KH', { year: 'numeric', month: 'long', day: 'numeric' });
+                const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const statusMap = {
+                    'pending': '⏳ រង់ចាំ (Pending)',
+                    'ordered': '🛒 បានកុម្មង់ (Ordered)',
+                    'shipping': '🚚 កំពុងដឹក (Shipping)',
+                    'completed': '✅ ជោគជ័យ (Completed)',
+                    'cancelled': '❌ បោះបង់ (Cancelled)'
+                };
+                const addrUrlMatch = cAddr ? cAddr.match(/(https?:\/\/[^\s]+)/) : null;
+                const addrText = cAddr ? cAddr.replace(/(https?:\/\/[^\s]+)/g, '').trim() : 'N/A';
+                const addrLine = addrText + (addrUrlMatch ? '\n     🗺️ ' + addrUrlMatch[0] : '');
+                const lines = [
+                    '📦 វិក្កយបត្រ / ORDER DETAIL',
+                    '━━━━━━━━━━━━━━━━━━━━━━',
+                    '📅 កាលបរិច្ឆេទ: ' + dateStr + ' · ' + timeStr,
+                    '🔖 ស្ថានភាព: ' + (statusMap[status] || status),
+                    '━━━━━━━━━━━━━━━━━━━━━━',
+                    '👤 អតិថិជន: ' + (cName || 'N/A'),
+                    '📞 ទូរស័ព្ទ: ' + (cPhone || 'N/A'),
+                    '📍 ទីតាំង: ' + addrLine,
+                    '━━━━━━━━━━━━━━━━━━━━━━',
+                    '🛍️ ទំនិញ: ' + (pName || 'N/A'),
+                    ...(pSize ? ['📐 ទំហំ (Size): ' + pSize] : []),
+                    '🔢 ចំនួន (Qty): ' + (pQty || 1),
+                    ...(trackNo ? ['📬 Tracking: ' + trackNo] : []),
+                    '━━━━━━━━━━━━━━━━━━━━━━',
+                    '💵 តម្លៃទំនិញ: $' + vSale.toFixed(2),
+                    '🚚 ថ្លៃដឹក: $' + vShip.toFixed(2),
+                    '💰 សរុបទូទាត់: $' + total.toFixed(2),
+                    '━━━━━━━━━━━━━━━━━━━━━━',
+                    '🙏 អរគុណដែលបានគាំទ្រ! Thank you!'
+                ];
+                const text = lines.join('\n');
+                if (navigator.share) {
+                    try { await navigator.share({ title: 'Order Details', text: text }); } catch (e) { }
+                } else {
+                    navigator.clipboard.writeText(text);
+                    ui.showToast('📋 បានចម្លងអក្សរវិក្កយបត្រ!');
+                }
+            },
             renderSettingsRate: () => {
                 const el = document.getElementById('sys-rate-input');
                 if (el) {
@@ -2717,8 +3068,122 @@
                 },
                 prepareImport: (input) => { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { const content = e.target.result; let importedData = []; if (file.name.toLowerCase().endsWith('.json')) importedData = JSON.parse(content); else if (file.name.toLowerCase().endsWith('.csv')) importedData = dataManager.parseCSV(content); else throw new Error("Format not supported"); if (!Array.isArray(importedData) || importedData.length === 0) throw new Error("No data found"); ui.showImportConfirm(importedData.length, importedData); input.value = ''; } catch (err) { alert("Error: " + err.message); } }; reader.readAsText(file); },
                 executeImport: async (data) => { document.getElementById('modal-import-overlay').classList.add('hidden'); const loader = document.getElementById('app-loader'); loader.style.display = 'flex'; document.getElementById('loader-text').innerText = "កំពុងបញ្ចូលទិន្ន័យ..."; try { const tx = dbConn.transaction(DB_CONFIG.store, 'readwrite'); const store = tx.objectStore(DB_CONFIG.store); data.forEach(item => store.put(item)); tx.oncomplete = async () => { await app.refresh(); loader.style.display = 'none'; ui.showToast(`✅ បញ្ចូល ${data.length} ទិន្ន័យជោគជ័យ!`); }; tx.onerror = (e) => { throw new Error(e.target.error); }; } catch (err) { loader.style.display = 'none'; alert("Import Failed: " + err); } },
-                parseCSV: (text) => { const lines = text.split('\n').filter(l => l.trim() !== ''); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g); if (!values) continue; const cleanVal = (val) => val ? val.replace(/^"|"$/g, '').replace(/""/g, '"').trim() : ''; let parsedDate = new Date().toISOString(); if (values[15]) { const rawD = cleanVal(values[15]); if (rawD && rawD.length > 5) parsedDate = rawD; } else if (values[0]) { const dateStr = cleanVal(values[0]); const d = new Date(dateStr); if (!isNaN(d.getTime())) { parsedDate = d.toISOString(); } } const row = { id: Date.now() + Math.random(), updatedAt: parsedDate, custName: cleanVal(values[1]), custPhone: cleanVal(values[2]), custAddr: cleanVal(values[3]), prodName: cleanVal(values[4]), prodSize: cleanVal(values[5]), prodQty: cleanVal(values[6]) || 1, costBuy: values[12] ? cleanVal(values[12]) : (cleanVal(values[7]) || 0), valSale: values[13] ? cleanVal(values[13]) : (cleanVal(values[8]) || 0), valShipIn: values[14] ? cleanVal(values[14]) : 0, costShip: 0, costBoost: 0, status: cleanVal(values[10]) || 'pending', note: cleanVal(values[11]) || '', isDeleted: false }; data.push(row); } return data; },
-                exportCSV: () => { const items = app.data; if (items.length === 0) { ui.showToast("⚠️ គ្មានទិន្ន័យសម្រាប់ Export"); return; } let csvContent = "\uFEFFDate,Customer,Phone,Address,Product,Size,Qty,Total Cost,Total Income,Profit,Status,Note,RawDate\n"; const q = (s) => { if (s === null || s === undefined) return '""'; return `"${s.toString().replace(/"/g, '""')}"`; }; items.forEach(o => { const f = app.calc(o); let dateStr = ""; try { dateStr = new Date(o.updatedAt).toISOString().split('T')[0]; } catch (e) { dateStr = ""; } const row = [q(dateStr), q(o.custName), q(o.custPhone), q(o.custAddr), q(o.prodName), q(o.prodSize), q(o.prodQty), q(f.expense.toFixed(2)), q(f.income.toFixed(2)), q(f.profit.toFixed(2)), q(o.status), q(o.note), q(o.updatedAt)].join(","); csvContent += row + "\n"; }); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); const today = new Date().toISOString().slice(0, 10); link.setAttribute("download", `Shop_Data_All_${today}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); },
+                parseCSV: (text) => {
+                    const lines = text.split('\n').filter(l => l.trim() !== '');
+                    const data = [];
+
+                    const headerLine = lines[0].toLowerCase();
+                    const isNewFormat = headerLine.includes('date(iso)') && headerLine.includes('tracking no');
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                        if (!values) continue;
+                        const cleanVal = (val) => val ? val.replace(/^"|"$/g, '').replace(/""/g, '"').trim() : '';
+
+                        if (isNewFormat && values.length >= 18) {
+                            const rawDate = cleanVal(values[1]);
+                            let parsedDate = new Date().toISOString();
+                            if (rawDate) {
+                                const d = new Date(rawDate);
+                                if (!isNaN(d.getTime())) parsedDate = d.toISOString();
+                            }
+
+                            const row = {
+                                id: cleanVal(values[0]) ? parseInt(cleanVal(values[0])) : (Date.now() + Math.random()),
+                                updatedAt: parsedDate,
+                                custName: cleanVal(values[2]),
+                                custPhone: cleanVal(values[3]),
+                                custAddr: cleanVal(values[4]),
+                                fbLink: cleanVal(values[5]),
+                                prodName: cleanVal(values[6]),
+                                prodSize: cleanVal(values[7]),
+                                prodQty: parseInt(cleanVal(values[8])) || 1,
+                                trackingNo: cleanVal(values[9]),
+                                prodImg: cleanVal(values[10]),
+                                valSale: parseFloat(cleanVal(values[11])) || 0,
+                                valShipIn: parseFloat(cleanVal(values[12])) || 0,
+                                costBuy: parseFloat(cleanVal(values[13])) || 0,
+                                costShip: parseFloat(cleanVal(values[14])) || 0,
+                                costBoost: parseFloat(cleanVal(values[15])) || 0,
+                                exchangeRate: parseInt(cleanVal(values[16])) || 4100,
+                                status: cleanVal(values[17]) || 'pending',
+                                note: cleanVal(values[18]) || '',
+                                isDeleted: false
+                            };
+                            data.push(row);
+                        } else {
+                            let parsedDate = new Date().toISOString();
+                            if (values[12]) {
+                                const d = new Date(cleanVal(values[12]));
+                                if (!isNaN(d.getTime())) parsedDate = d.toISOString();
+                            }
+                            const row = {
+                                id: Date.now() + Math.random(),
+                                updatedAt: parsedDate,
+                                custName: cleanVal(values[1]),
+                                custPhone: cleanVal(values[2]),
+                                custAddr: cleanVal(values[3]),
+                                prodName: cleanVal(values[4]),
+                                prodSize: cleanVal(values[5]),
+                                prodQty: parseInt(cleanVal(values[6])) || 1,
+                                valSale: parseFloat(cleanVal(values[8])) || 0,
+                                valShipIn: 0, costBuy: 0, costShip: 0, costBoost: 0,
+                                status: cleanVal(values[10]) || 'pending',
+                                note: cleanVal(values[11]) || '',
+                                isDeleted: false
+                            };
+                            data.push(row);
+                        }
+                    }
+                    return data;
+                },
+
+                exportCSV: () => {
+                    const items = app.data;
+                    if (items.length === 0) { ui.showToast("⚠️ គ្មានទិន្ន័យសម្រាប់ Export"); return; }
+
+                    let csvContent = "\uFEFFID,Date(ISO),Customer,Phone,Address,FB Link,Product,Size,Qty,Tracking No,Image URL,Sale Price,Shipping In,Cost Buy,Shipping Out,Boost Ads,Exchange Rate,Status,Note\n";
+
+                    const q = (s) => {
+                        if (s === null || s === undefined) return '""';
+                        return `"${s.toString().replace(/"/g, '""')}"`;
+                    };
+
+                    items.forEach(o => {
+                        const row = [
+                            q(o.id),
+                            q(o.updatedAt),
+                            q(o.custName),
+                            q(o.custPhone),
+                            q(o.custAddr),
+                            q(o.fbLink || ''),
+                            q(o.prodName),
+                            q(o.prodSize),
+                            q(o.prodQty),
+                            q(o.trackingNo || ''),
+                            q(o.prodImg || ''),
+                            q(o.valSale || 0),
+                            q(o.valShipIn || 0),
+                            q(o.costBuy || 0),
+                            q(o.costShip || 0),
+                            q(o.costBoost || 0),
+                            q(o.exchangeRate || app.config.sysRate),
+                            q(o.status),
+                            q(o.note || '')
+                        ].join(",");
+                        csvContent += row + "\n";
+                    });
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    const today = new Date().toISOString().slice(0, 10);
+                    link.setAttribute("download", `Shop_Data_Backup_${today}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
                 resetApp: () => { ui.askConfirm('reset_app'); }, emptyTrash: () => ui.askConfirm('empty_trash')
             }
 
@@ -2763,10 +3228,12 @@
                 }
 
                 const f = app.calc(item);
-                let amount = f.income;
-                let theme = { border: 'status-inc', dotColor: 'bg-emerald-500', moneyColor: 'text-emerald-600', sign: '+' };
-                if (item.status === 'pending') { theme = { border: 'status-pen', dotColor: 'bg-orange-500', moneyColor: 'text-orange-500', sign: '~' }; }
-                else if (item.status === 'cancelled') { theme = { border: 'status-exp', dotColor: 'bg-gray-400', moneyColor: 'text-gray-400 decoration-line-through', sign: '' }; amount = 0; }
+                let amount = f.profit;
+                let theme = { border: 'status-pen', dotColor: 'bg-orange-400', moneyColor: 'text-orange-500', sign: '~' };
+                if (item.status === 'ordered') { theme = { border: 'status-pen', dotColor: 'bg-blue-500', moneyColor: 'text-blue-500', sign: '~' }; }
+                else if (item.status === 'shipping') { theme = { border: 'status-pen', dotColor: 'bg-indigo-500', moneyColor: 'text-indigo-500', sign: '~' }; }
+                else if (item.status === 'completed') { theme = { border: 'status-inc', dotColor: 'bg-emerald-500', moneyColor: 'text-emerald-600', sign: '+' }; }
+                else if (item.status === 'cancelled') { theme = { border: 'status-exp', dotColor: 'bg-gray-400', moneyColor: 'text-gray-400 line-through', sign: '' }; amount = 0; }
                 const delay = index * 0.05;
                 const cardHtml = `<div class="history-card-modern ${theme.border}" style="animation-delay: ${delay}s" onclick="ui.openOrderModal(${item.id})"><div class="history-dot ${theme.dotColor}"></div><div class="flex justify-between items-start"><div><h4 class="font-bold text-gray-800 dark:text-gray-100 text-sm mb-0.5">${item.prodName}</h4><div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"><span class="bg-gray-100 dark:bg-gray-700 px-1.5 rounded text-[10px] font-mono">${timeStr}</span><span>• ${item.custName}</span></div></div><div class="text-right"><div class="font-bold ${theme.moneyColor} text-base">${theme.sign}$${amount.toFixed(2)}</div><div class="text-[9px] uppercase font-bold opacity-60 mt-1">${item.status}</div></div></div></div>`;
                 wrapper.insertAdjacentHTML('beforeend', cardHtml);
@@ -2777,20 +3244,26 @@
         // ==========================================
 
         ui.openAddressModal = function () {
-            // 1. យកទិន្ន័យពីប្រអប់តូច (cust-addr)
             const smallInput = document.getElementById('cust-addr');
             const bigTextarea = document.getElementById('expanded-addr-text');
+            const mapBtn = document.getElementById('modal-addr-map-btn');
+            const address = smallInput.value;
 
-            // 2. បោះចូលទៅក្នុងប្រអប់ធំ
-            bigTextarea.value = smallInput.value;
+            bigTextarea.value = address;
 
-            // 3. បង្ហាញ Popup (ដែលយើងបានដាក់ z-index: 100)
+            const urlMatch = address ? address.match(/(https?:\/\/[^\s]+)/) : null;
+            if (urlMatch && mapBtn) {
+                mapBtn.href = urlMatch[0];
+                mapBtn.classList.remove('hidden');
+                mapBtn.classList.add('flex');
+            } else if (mapBtn) {
+                mapBtn.href = '#';
+                mapBtn.classList.add('hidden');
+                mapBtn.classList.remove('flex');
+            }
+
             document.getElementById('modal-address-expand').classList.remove('hidden');
-
-            // 4. ដាក់ Focus ឱ្យសរសេរបានភ្លាមៗ
-            setTimeout(() => {
-                bigTextarea.focus();
-            }, 100);
+            setTimeout(() => { bigTextarea.focus(); }, 100);
         };
 
         ui.saveExpandedAddress = function () {
@@ -2805,17 +3278,148 @@
         };
         // បន្ថែមនៅខាងក្រៅ ឬក្នុង ui object ក៏បាន
         ui.quickViewAddress = (address) => {
-            // បញ្ឈប់ការចុចនេះកុំឱ្យវាធ្លាយទៅបើក Order Modal ធំ
             if (event) event.stopPropagation();
 
-            // ដាក់អាសយដ្ឋានចូលក្នុងផ្ទាំង Modal
             const textarea = document.getElementById('expanded-addr-text');
+            const mapBtn = document.getElementById('modal-addr-map-btn');
+
             textarea.value = address || "មិនមានអាសយដ្ឋានត្រូវបានកត់ត្រាទេ";
 
-            // បង្ហាញ Modal
+            // ស្វែងរក URL ក្នុង Address (Google Maps ឬ Link ណាក៏ដោយ)
+            const urlMatch = address ? address.match(/(https?:\/\/[^\s]+)/) : null;
+            if (urlMatch && mapBtn) {
+                mapBtn.href = urlMatch[0];
+                mapBtn.classList.remove('hidden');
+                mapBtn.classList.add('flex');
+            } else if (mapBtn) {
+                mapBtn.href = '#';
+                mapBtn.classList.add('hidden');
+                mapBtn.classList.remove('flex');
+            }
+
             document.getElementById('modal-address-expand').classList.remove('hidden');
         };
         window.onload = app.init;
+        document.addEventListener('DOMContentLoaded', () => {
+            const statusFilterBtn = document.getElementById('statusFilterBtn');
+            const statusModal = document.getElementById('statusModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const statusOptions = document.querySelectorAll('.status-option');
+            const currentStatusText = document.getElementById('currentStatusText');
+
+            // បើកផ្ទាំង Popup
+            if (statusFilterBtn && statusModal) {
+                statusFilterBtn.addEventListener('click', () => {
+                    statusModal.classList.remove('hidden');
+                    statusModal.classList.add('flex');
+                });
+            }
+
+            // បិទផ្ទាំង Popup (ពេលចុចសញ្ញាខ្វែង)
+            if (closeModalBtn && statusModal) {
+                closeModalBtn.addEventListener('click', () => {
+                    statusModal.classList.add('hidden');
+                    statusModal.classList.remove('flex');
+                });
+            }
+
+            // បិទផ្ទាំង Popup (ពេលចុចផ្ទៃខាងក្រៅ)
+            if (statusModal) {
+                statusModal.addEventListener('click', (e) => {
+                    if (e.target === statusModal) {
+                        statusModal.classList.add('hidden');
+                        statusModal.classList.remove('flex');
+                    }
+                });
+            }
+
+            // ពេលជ្រើសរើស Status ណាមួយ
+            if (statusOptions && statusModal) {
+                statusOptions.forEach(option => {
+                    option.addEventListener('click', () => {
+                        const statusValue = option.getAttribute('data-status');
+                        const icon = option.querySelector('span:nth-child(1)').innerText;
+                        const text = option.querySelector('span:nth-child(2)').innerText;
+
+                        // ប្ដូរអក្សរលើប៊ូតុងខាងក្រៅ
+                        if (currentStatusText) currentStatusText.innerText = `${icon} ${text}`;
+
+                        // បិទ Popup
+                        statusModal.classList.add('hidden');
+                        statusModal.classList.remove('flex');
+
+                        // ហៅមុខងារច្រោះទិន្នន័យ ដែលអ្នកមានស្រាប់
+                        if (typeof ui !== 'undefined' && typeof ui.filterList === 'function') {
+                            ui.filterList(statusValue);
+                        }
+                    });
+                });
+            }
+        });
+        // ===================================================================
+        // កូដថ្មីសម្រាប់បញ្ជា Popup Status នៅក្នុងផ្ទាំង "បង្កើតការលក់ថ្មី/កែប្រែ"
+        // ===================================================================
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // ចាប់យកឈ្មោះ ID របស់កូដ HTML ដែលយើងបានបង្កើតនៅជំហានទី១ និងទី២
+            const formStatusBtn = document.getElementById('formStatusBtn');
+            const formStatusModal = document.getElementById('formStatusModal');
+            const closeFormStatusModalBtn = document.getElementById('closeFormStatusModalBtn');
+            const formStatusItems = document.querySelectorAll('.form-status-item');
+            const hiddenStatusInput = document.getElementById('status');
+            const formStatusIcon = document.getElementById('formStatusIcon');
+            const formStatusText = document.getElementById('formStatusText');
+
+            // ១. ពេលចុចលើប្រអប់ Status ថ្មី => វានឹងបើកផ្ទាំង Popup លោតឡើងមក
+            if (formStatusBtn && formStatusModal) {
+                formStatusBtn.addEventListener('click', function () {
+                    formStatusModal.classList.remove('hidden');
+                    formStatusModal.classList.add('flex');
+                });
+            }
+
+            // ២. Function សម្រាប់បិទផ្ទាំង Popup វិញ
+            function closeFormStatusModal() {
+                if (formStatusModal) {
+                    formStatusModal.classList.add('hidden');
+                    formStatusModal.classList.remove('flex');
+                }
+            }
+
+            // ពេលចុចសញ្ញាខ្វែង (X) ឬចុចលើផ្ទៃទទេខាងក្រៅ => បិទ Popup វិញ
+            if (closeFormStatusModalBtn) {
+                closeFormStatusModalBtn.addEventListener('click', closeFormStatusModal);
+            }
+            if (formStatusModal) {
+                formStatusModal.addEventListener('click', function (e) {
+                    if (e.target === formStatusModal) {
+                        closeFormStatusModal();
+                    }
+                });
+            }
+
+            // ៣. ពេលចុចជ្រើសរើសស្ថានភាពណាមួយ (ឧ. ជោគជ័យ, រង់ចាំ, កំពុងដឹក...)
+            if (formStatusItems.length > 0) {
+                formStatusItems.forEach(function (item) {
+                    item.addEventListener('click', function () {
+                        // ទាញយកតម្លៃ (Value), Icon និងអក្សរ ពីជម្រើសដែលបានចុច
+                        const val = this.getAttribute('data-status');
+                        const icon = this.getAttribute('data-icon');
+                        const text = this.getAttribute('data-text');
+
+                        // [សំខាន់បំផុត] លាក់ទិន្នន័យ (Value) ទុក ដើម្បីឲ្យប្រព័ន្ធចាប់យកទៅ Save បានធម្មតា
+                        if (hiddenStatusInput) hiddenStatusInput.value = val;
+
+                        // ប្តូររូប Icon និងអក្សរនៅលើផ្ទាំង Form ឲ្យឃើញស្អាត
+                        if (formStatusIcon) formStatusIcon.innerText = icon;
+                        if (formStatusText) formStatusText.innerText = text;
+
+                        // រើសរួចរាល់ហើយ => បិទ Popup វិញភ្លាមដោយមិនបាច់ចុច OK
+                        closeFormStatusModal();
+                    });
+                });
+            }
+        });
     </script>
     <div id="modal-drilldown"
         class="fixed inset-0 bg-black/60 z-[100] hidden flex items-end sm:items-center justify-center backdrop-blur-sm">
@@ -2879,15 +3483,117 @@
                 <div class="w-full h-px bg-gradient-to-r from-transparent via-teal-500/30 to-transparent mt-2"></div>
             </div>
 
-            <div class="px-6 py-5 flex justify-end gap-3 relative z-10">
-                <button onclick="document.getElementById('modal-address-expand').classList.add('hidden')"
-                    class="px-5 py-2.5 rounded-xl text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-100/50 dark:hover:bg-white/5 transition text-sm">
-                    បោះបង់
+            <div class="px-6 pb-6 pt-2 flex flex-col gap-3 relative z-10">
+                <a id="modal-addr-map-btn" href="#" target="_blank"
+                    class="hidden w-full items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 font-bold text-sm hover:bg-blue-100 transition active:scale-95">
+                    <i class="fas fa-map-marked-alt"></i> បើក Google Maps
+                </a>
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('modal-address-expand').classList.add('hidden')"
+                        class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-100/50 dark:hover:bg-white/5 transition text-sm">
+                        បោះបង់
+                    </button>
+                    <button onclick="ui.saveExpandedAddress()"
+                        class="flex-1 py-3 rounded-xl bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition text-sm">
+                        យល់ព្រម
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="statusModal"
+        class="fixed inset-0 z-[100] hidden items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-transform pb-4 sm:pb-0 border border-transparent dark:border-slate-700">
+            <div
+                class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/80 dark:bg-slate-800/80">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">ជ្រើសរើសស្ថានភាព</h3>
+                <button id="closeModalBtn"
+                    class="p-1.5 bg-gray-200/60 dark:bg-slate-700/60 rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
-                <button onclick="ui.saveExpandedAddress()"
-                    class="px-8 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition text-sm">
-                    យល់ព្រម
+            </div>
+            <div class="p-3 space-y-1">
+                <div class="status-option flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="all">
+                    <span class="text-xl">📄</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">បង្ហាញទាំងអស់
+                        (All)</span>
+                </div>
+                <div class="status-option flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="pending">
+                    <span class="text-xl">⏳</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">រង់ចាំ
+                        (Pending)</span>
+                </div>
+                <div class="status-option flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="ordered">
+                    <span class="text-xl">🛒</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">បានកុម្ម៉ង់
+                        (Ordered)</span>
+                </div>
+                <div class="status-option flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="shipping">
+                    <span class="text-xl">🚚</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">កំពុងដឹក
+                        (Shipping)</span>
+                </div>
+                <div class="status-option flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="completed">
+                    <span class="text-xl">✅</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">ជោគជ័យ
+                        (Completed)</span>
+                </div>
+                <div class="status-option flex items-center gap-4 px-4 py-3.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="cancelled">
+                    <span class="text-xl">❌</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">បោះបង់
+                        (Cancelled)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="formStatusModal"
+        class="fixed inset-0 z-[10000] hidden items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-transform pb-4 sm:pb-0 border border-transparent dark:border-slate-700 animate-slide-up">
+            <div
+                class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/80 dark:bg-slate-800/80">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 font-serif-kh">កំណត់ស្ថានភាព</h3>
+                <button id="closeFormStatusModalBtn"
+                    class="p-1.5 bg-gray-200/60 dark:bg-slate-700/60 rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors">
+                    <i class="fas fa-times w-5 h-5 flex items-center justify-center"></i>
                 </button>
+            </div>
+            <div class="p-3 space-y-1">
+                <div class="form-status-item flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="pending" data-icon="⏳" data-text="រង់ចាំ (Pending)">
+                    <span class="text-xl">⏳</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">រង់ចាំ (Pending)</span>
+                </div>
+                <div class="form-status-item flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="ordered" data-icon="🛒" data-text="បានកុម្មង់ (Ordered)">
+                    <span class="text-xl">🛒</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">បានកុម្មង់ (Ordered)</span>
+                </div>
+                <div class="form-status-item flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="shipping" data-icon="🚚" data-text="កំពុងដឹក (Shipping)">
+                    <span class="text-xl">🚚</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">កំពុងដឹក (Shipping)</span>
+                </div>
+                <div class="form-status-item flex items-center gap-4 px-4 py-3.5 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="completed" data-icon="✅" data-text="ជោគជ័យ (Completed)">
+                    <span class="text-xl">✅</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">ជោគជ័យ (Completed)</span>
+                </div>
+                <div class="form-status-item flex items-center gap-4 px-4 py-3.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl cursor-pointer transition-colors"
+                    data-status="cancelled" data-icon="❌" data-text="បោះបង់ (Cancelled)">
+                    <span class="text-xl">❌</span><span
+                        class="font-medium text-gray-700 dark:text-gray-300 text-[16px]">បោះបង់ (Cancelled)</span>
+                </div>
             </div>
         </div>
     </div>
