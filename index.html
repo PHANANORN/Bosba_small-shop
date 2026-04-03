@@ -2989,7 +2989,7 @@
                 const pName = document.getElementById('prod-name').value;
                 const pSize = document.getElementById('prod-size').value;
                 const pQty = document.getElementById('prod-qty').value;
-                const trackNo = document.getElementById('track-no').value;
+                const fbLink = document.getElementById('cust-fb').value;
                 const vSale = parseFloat(document.getElementById('val-sale').value) || 0;
                 const vShip = parseFloat(document.getElementById('val-ship-in').value) || 0;
                 const total = vSale + vShip;
@@ -3016,6 +3016,7 @@
                     '👤 អតិថិជន: ' + (cName || 'N/A'),
                     '📞 ទូរស័ព្ទ: ' + (cPhone || 'N/A'),
                     '📍 ទីតាំង: ' + addrLine,
+                    ...(fbLink ? ['💬 Messenger: ' + fbLink] : []),
                     '━━━━━━━━━━━━━━━━━━━━━━',
                     '🛍️ ទំនិញ: ' + (pName || 'N/A'),
                     ...(pSize ? ['📐 ទំហំ (Size): ' + pSize] : []),
