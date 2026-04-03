@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shop-pro-v2';
+const CACHE_NAME = 'shop-pro-v3';
 const FILES = [
     './',
     './index.html',
