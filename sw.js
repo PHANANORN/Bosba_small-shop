@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shop-pro-v4';
+const CACHE_NAME = 'shop-pro-v2';
 const FILES = [
     './',
     './index.html',
@@ -9,16 +9,6 @@ const FILES = [
 
 self.addEventListener('install', (e) => {
     e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(FILES)));
-    self.skipWaiting(); // ← Activate ភ្លាមដោយមិនរង់ចាំ Tab ចាស់
-});
-
-self.addEventListener('activate', (e) => {
-    e.waitUntil(
-        caches.keys().then(keys =>
-            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-        )
-    );
-    self.clients.claim(); // ← គ្រប់គ្រង Tab ទាំងអស់ភ្លាម
 });
 
 self.addEventListener('fetch', (e) => {
